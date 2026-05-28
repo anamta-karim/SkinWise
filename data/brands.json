@@ -1,0 +1,919 @@
+{
+  "brands": [
+
+    
+
+    {
+      "name": "Plum",
+      "aliases": ["plum goodness"],
+      "cruelty_free": true,
+      "vegan": true,
+      "certification": ["PETA"],
+      "note": "India's first 100% vegan and PETA-certified cruelty-free brand since 2013.",
+      "source": "PETA"
+    },
+    {
+      "name": "Dot & Key",
+      "aliases": ["dot and key", "dot&key"],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": ["PETA"],
+      "note": "PETA certified cruelty-free. Not fully vegan as some products contain animal-derived ingredients.",
+      "source": "PETA"
+    },
+    {
+      "name": "Minimalist",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": true,
+      "certification": [],
+      "note": "Cruelty-free and vegan. Full ingredient transparency on all products.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "The Derma Co",
+      "aliases": ["derma co", "the derma company"],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free. Not certified vegan.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Dr. Sheth's",
+      "aliases": ["dr sheths", "dr. sheths"],
+      "cruelty_free": true,
+      "vegan": true,
+      "certification": [],
+      "note": "Vegan and cruelty-free. Sulfate and paraben free.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Foxtale",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": true,
+      "certification": [],
+      "note": "Cruelty-free and vegan Indian D2C brand.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Hyphen",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": true,
+      "certification": [],
+      "note": "Cruelty-free and vegan Indian D2C brand.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Wishcare",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free. Not certified vegan.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Deconstruct",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": true,
+      "certification": [],
+      "note": "Cruelty-free and vegan Indian skincare brand.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Aqualogica",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": true,
+      "certification": [],
+      "note": "Cruelty-free and vegan. Part of Mamaearth group.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Mamaearth",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": ["MadeSafe"],
+      "note": "Cruelty-free and toxin-free. Not fully vegan.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Chemist at Play",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": true,
+      "certification": [],
+      "note": "Cruelty-free and vegan Indian skincare brand.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "MCaffeine",
+      "aliases": ["m caffeine"],
+      "cruelty_free": true,
+      "vegan": true,
+      "certification": ["PETA"],
+      "note": "PETA certified vegan and cruelty-free.",
+      "source": "PETA"
+    },
+    {
+      "name": "Kama Ayurveda",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free but uses some animal-derived Ayurvedic ingredients like honey and milk.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Forest Essentials",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free but not vegan. Uses some Ayurvedic animal-derived ingredients.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Biotique",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "No animal testing but some products contain animal-derived ingredients.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Himalaya",
+      "aliases": ["himalaya herbals"],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free. Not fully vegan as some products use animal-derived ingredients.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Lotus Herbals",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free. Some products may contain animal-derived ingredients.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Lakme",
+      "aliases": ["lakmé"],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by Hindustan Unilever which tests on animals where required by law.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Ponds",
+      "aliases": ["pond's"],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by Hindustan Unilever which tests on animals where required by law.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Sugar Cosmetics",
+      "aliases": ["sugar"],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": ["PETA"],
+      "note": "PETA certified cruelty-free. Not fully vegan.",
+      "source": "PETA"
+    },
+    {
+      "name": "Earth Rhythm",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": true,
+      "certification": ["ECOCERT", "COSMOS"],
+      "note": "ECOCERT and COSMOS certified. Vegan and cruelty-free.",
+      "source": "ECOCERT"
+    },
+    {
+      "name": "Conscious Chemist",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": true,
+      "certification": [],
+      "note": "Vegan and cruelty-free Indian brand.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Just Herbs",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free Ayurvedic brand. Not fully vegan.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Jeva",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free Indian brand.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Everyuth Naturals",
+      "aliases": ["everyuth"],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free brand.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "O3+",
+      "aliases": ["o3 plus"],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Professional skincare brand. Cruelty-free, not certified vegan.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Raaga Professional",
+      "aliases": ["raaga"],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free professional Indian brand.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Niconi",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free Indian brand.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Nykaa",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Nykaa's own label products are cruelty-free. Not fully vegan.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Renee Cosmetics",
+      "aliases": ["renee"],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free Indian cosmetics brand.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Dr. Rashel",
+      "aliases": ["dr rashel"],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free brand. Not certified vegan.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "ClayCo",
+      "aliases": ["clayco"],
+      "cruelty_free": true,
+      "vegan": true,
+      "certification": [],
+      "note": "Cruelty-free and vegan Indian brand.",
+      "source": "Brand claim"
+    },
+
+    
+
+    {
+      "name": "COSRX",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free. Not fully vegan as some products contain snail mucin and other animal-derived ingredients.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Beauty of Joseon",
+      "aliases": ["beauty of joseon"],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free K-beauty brand. Not fully vegan.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Innisfree",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free. Does not sell in mainland China. Not fully vegan.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Laneige",
+      "aliases": [],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by AmorePacific which sells in mainland China where animal testing may be required.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "The Face Shop",
+      "aliases": ["thefaceshop"],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by LG H&H which sells in mainland China. Not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "TonyMoly",
+      "aliases": ["tony moly"],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free. Does not test on animals. Not fully vegan.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "SKIN1004",
+      "aliases": ["skin 1004"],
+      "cruelty_free": true,
+      "vegan": true,
+      "certification": [],
+      "note": "Cruelty-free and vegan K-beauty brand.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Anua",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": true,
+      "certification": [],
+      "note": "Cruelty-free and vegan Korean skincare brand.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Celimax",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free K-beauty brand. Not fully vegan.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "d'Alba Piedmont",
+      "aliases": ["dalba", "d'alba"],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free Korean brand. Some products contain non-vegan ingredients.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "I'm From",
+      "aliases": ["im from"],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free K-beauty brand. Not fully vegan.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Missha",
+      "aliases": [],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Sells in mainland China. Cannot be considered cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Etude House",
+      "aliases": ["etude"],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by AmorePacific which sells in mainland China.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Sulwhasoo",
+      "aliases": [],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by AmorePacific which sells in mainland China.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Dr. Jart+",
+      "aliases": ["dr jart", "dr. jart"],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by Estee Lauder Companies which is not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Klairs",
+      "aliases": ["dear klairs"],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free. Some products are vegan, check individual products.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Some By Mi",
+      "aliases": ["somebymi"],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free K-beauty brand. Not fully vegan.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Glow Recipe",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": true,
+      "certification": ["Leaping Bunny"],
+      "note": "Leaping Bunny certified. Vegan and cruelty-free.",
+      "source": "Leaping Bunny"
+    },
+    {
+      "name": "Peach & Lily",
+      "aliases": ["peach and lily"],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free K-beauty brand. Not fully vegan.",
+      "source": "Brand claim"
+    },
+
+    
+
+    {
+      "name": "The Ordinary",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free. Most products are vegan but some contain animal-derived ingredients. Part of DECIEM.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "CeraVe",
+      "aliases": [],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by L'Oreal which sells in mainland China and is not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Neutrogena",
+      "aliases": [],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by Johnson & Johnson which sells in mainland China and is not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Paula's Choice",
+      "aliases": ["paulas choice"],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": ["Leaping Bunny"],
+      "note": "Leaping Bunny certified cruelty-free. Not fully vegan — some products contain lanolin.",
+      "source": "Leaping Bunny"
+    },
+    {
+      "name": "Clinique",
+      "aliases": [],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by Estee Lauder Companies which sells in mainland China.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Estee Lauder",
+      "aliases": ["estée lauder"],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Sells in mainland China where animal testing may be required by law.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Dermalogica",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": ["Leaping Bunny"],
+      "note": "Leaping Bunny certified. Not fully vegan.",
+      "source": "Leaping Bunny"
+    },
+    {
+      "name": "La Roche-Posay",
+      "aliases": ["la roche posay", "laroche posay"],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by L'Oreal which sells in mainland China and is not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Eucerin",
+      "aliases": [],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by Beiersdorf which sells in mainland China. Not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Cetaphil",
+      "aliases": [],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by Galderma which sells in mainland China. Not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Simple",
+      "aliases": ["simple skincare"],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by Unilever which sells in mainland China. Not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Glossier",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": ["Leaping Bunny"],
+      "note": "Leaping Bunny certified. Not fully vegan.",
+      "source": "Leaping Bunny"
+    },
+    {
+      "name": "Fenty Beauty",
+      "aliases": ["fenty"],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free. Not fully vegan.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Tatcha",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free. Not fully vegan — some products contain silk and other animal-derived ingredients.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Drunk Elephant",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free. Not fully vegan — some products contain honey, marula, and other animal-derived ingredients.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "The Inkey List",
+      "aliases": ["inkey list"],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free. Not all products are vegan.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Versed",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": true,
+      "certification": ["Leaping Bunny"],
+      "note": "Leaping Bunny certified. Fully vegan and cruelty-free.",
+      "source": "Leaping Bunny"
+    },
+    {
+      "name": "Youth To The People",
+      "aliases": ["yttp"],
+      "cruelty_free": true,
+      "vegan": true,
+      "certification": ["Leaping Bunny"],
+      "note": "Leaping Bunny certified. Fully vegan and cruelty-free.",
+      "source": "Leaping Bunny"
+    },
+    {
+      "name": "Herbivore Botanicals",
+      "aliases": ["herbivore"],
+      "cruelty_free": true,
+      "vegan": true,
+      "certification": ["Leaping Bunny"],
+      "note": "Leaping Bunny certified. Fully vegan.",
+      "source": "Leaping Bunny"
+    },
+    {
+      "name": "Ole Henriksen",
+      "aliases": [],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by LVMH. Sells in mainland China. Not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Origins",
+      "aliases": [],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by Estee Lauder Companies which sells in mainland China.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Kiehl's",
+      "aliases": ["kiehls"],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by L'Oreal which sells in mainland China. Not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+
+    
+
+    {
+      "name": "Bioderma",
+      "aliases": [],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Sells in mainland China. Not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Embryolisse",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free French brand. Not fully vegan.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Vichy",
+      "aliases": [],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by L'Oreal which sells in mainland China. Not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Avene",
+      "aliases": ["avène"],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by Pierre Fabre which sells in mainland China. Not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "NUXE",
+      "aliases": ["nuxe"],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free French brand. Not fully vegan.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Weleda",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free. Not fully vegan — uses beeswax and lanolin in some products.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "The Body Shop",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": ["Cruelty Free International"],
+      "note": "Certified by Cruelty Free International. Not fully vegan.",
+      "source": "Cruelty Free International"
+    },
+    {
+      "name": "Charlotte Tilbury",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": ["Leaping Bunny"],
+      "note": "Leaping Bunny certified. Not fully vegan.",
+      "source": "Leaping Bunny"
+    },
+    {
+      "name": "PIXI",
+      "aliases": ["pixi beauty"],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free. Not fully vegan.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "Caudalie",
+      "aliases": [],
+      "cruelty_free": true,
+      "vegan": false,
+      "certification": [],
+      "note": "Cruelty-free French brand. Not fully vegan.",
+      "source": "Brand claim"
+    },
+    {
+      "name": "L'Oreal",
+      "aliases": ["loreal", "l'oréal"],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Sells in mainland China where animal testing may be required by law.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Garnier",
+      "aliases": [],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by L'Oreal which sells in mainland China. Not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Maybelline",
+      "aliases": [],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by L'Oreal which sells in mainland China. Not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "NYX",
+      "aliases": ["nyx cosmetics"],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by L'Oreal which sells in mainland China. Not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Nivea",
+      "aliases": [],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by Beiersdorf which sells in mainland China. Not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Dove",
+      "aliases": [],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by Unilever which sells in mainland China. Not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+
+    
+
+    {
+      "name": "Chanel",
+      "aliases": [],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Sells in mainland China. Not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Dior",
+      "aliases": [],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by LVMH which sells in mainland China. Not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "YSL Beauty",
+      "aliases": ["ysl", "yves saint laurent"],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by L'Oreal which sells in mainland China. Not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Lancome",
+      "aliases": ["lancôme"],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by L'Oreal which sells in mainland China. Not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "MAC Cosmetics",
+      "aliases": ["mac"],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by Estee Lauder Companies which sells in mainland China. Not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Bobbi Brown",
+      "aliases": [],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by Estee Lauder Companies which sells in mainland China. Not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "NARS",
+      "aliases": [],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by Shiseido which sells in mainland China. Not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Shiseido",
+      "aliases": [],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Sells in mainland China where animal testing may be required.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "SK-II",
+      "aliases": ["skii", "sk2"],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by Procter & Gamble which sells in mainland China. Not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    },
+    {
+      "name": "Olay",
+      "aliases": [],
+      "cruelty_free": false,
+      "vegan": false,
+      "certification": [],
+      "note": "Owned by Procter & Gamble which sells in mainland China. Not cruelty-free.",
+      "source": "Cruelty-Free Kitty"
+    }
+  ]
+}

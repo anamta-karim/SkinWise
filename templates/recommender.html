@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recommender • SkinWise</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --lav-50: #F5F0FF;
+      --lav-100: #EDE8FF;
+      --lav-200: #D8CCFF;
+      --lav-400: #A78BDE;
+      --lav-600: #7C5CBF;
+      --lav-800: #3D2878;
+      --lav-900: #1E1040;
+      --cream: #FDFBFF;
+      --muted: #8B7AAF;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--cream);
+      color: var(--lav-900);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+    .blob {
+      position: absolute;
+      background: radial-gradient(circle at 40% 40%, #D8CCFF 0%, #EDE8FF 40%, transparent 70%);
+      border-radius: 50%;
+      z-index: -1;
+      animation: float 25s ease-in-out infinite;
+    }
+    .blob1 { width: 500px; height: 500px; top: -120px; right: -80px; }
+    .blob2 { width: 420px; height: 420px; bottom: -100px; left: -60px; animation-delay: 8s; }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 2rem; position: relative; z-index: 2; }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 3.4rem;
+      text-align: center;
+      margin-bottom: 0.5rem;
+      color: var(--lav-600);
+    }
+
+    .card {
+      background: rgba(255,255,255,0.75);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(167,139,222,0.25);
+      border-radius: 28px;
+      box-shadow: 0 8px 32px rgba(124,92,191,0.08);
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .pill {
+      padding: 10px 22px;
+      background: rgba(255,255,255,0.8);
+      border: 2px solid var(--lav-200);
+      border-radius: 50px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      white-space: nowrap;
+      box-shadow: 0 2px 6px rgba(124,92,191,0.08);
+    }
+
+    .pill.active {
+      background: var(--lav-600);
+      color: white;
+      border-color: var(--lav-800);
+      box-shadow: 0 4px 12px rgba(124,92,191,0.25);
+    }
+
+    .pill:hover {
+      background: var(--lav-100);
+      border-color: var(--lav-400);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(124,92,191,0.15);
+    }
+
+    #skinTypesContainer, #concernsContainer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 10px;
+      margin-bottom: 2rem;
+      justify-content: center;
+    }
+
+    button {
+      display: block;
+      margin: 2.5rem auto 0;
+      width: auto;
+      padding: 24px 56px;
+      font-size: 1.4rem;
+      font-weight: 600;
+      border-radius: 9999px;
+      background: linear-gradient(90deg, var(--lav-600), var(--lav-400));
+      color: white;
+      border: none;
+      box-shadow: 0 12px 30px rgba(124,92,191,0.4);
+      cursor: pointer;
+    }
+    button:hover { transform: translateY(-4px); }
+
+    .rec-card {
+      background: rgba(255,255,255,0.75);
+      border-radius: 24px;
+      padding: 1rem;
+      width: 260px;
+      box-shadow: 0 8px 25px rgba(124,92,191,0.1);
+    }
+  </style>
+</head>
+<body>
+    <nav style="position: fixed; top: 0; left: 0; right: 0; background: rgba(253,251,255,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(167,139,222,0.15); padding: 1.3rem 3rem; display: flex; align-items: center; justify-content: space-between; z-index: 100;">
+      <div class="logo" style="font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 600; color: var(--lav-800); letter-spacing: -0.5px;">
+        Skin<span style="color: var(--lav-400);">Wise</span>
+      </div>
+      <div style="display: flex; gap: 2rem; font-weight: 500;">
+        <a href="/" style="text-decoration: none; color: var(--muted);">Home</a>
+        <a href="/analyzer" style="text-decoration: none; color: var(--muted);">Analyzer</a>
+        <a href="/recommender" style="text-decoration: none; color: var(--muted);">Regimen</a>
+        <a href="/ethiscan" style="text-decoration: none; color: var(--muted);">EthiScan</a>
+      </div>
+    </nav>
+
+<div style="height: 70px;"></div>
+
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+
+  <div class="container">
+    <h1>Your Personal Regimen</h1>
+    <p style="text-align:center; color:var(--muted); font-size:1.3rem; margin-bottom:2rem;">Tell us your skin type & concerns • We'll build your complete regimen</p>
+
+<div style="text-align:center; margin-bottom:1.5rem;">
+  <span style="background:linear-gradient(90deg, #7C5CBF, #A78BDE); color:white; padding:6px 16px; border-radius:50px; font-size:0.85rem; font-weight:600; display:inline-flex; align-items:center; gap:6px;">✨ Powered by Groq AI</span>
+</div>
+
+    <div class="card">
+      <label style="font-weight:500; display:block; margin-bottom:1rem; text-align:center;">Your skin type(s) — choose all that apply</label>
+      <div class="skin-types" id="skinTypesContainer"></div>
+
+      <div style="margin-top:2.5rem;">
+        <label style="font-weight:500; display:block; margin-bottom:1rem; text-align:center;">Your main concerns (optional)</label>
+        <div class="concerns" id="concernsContainer"></div>
+      </div>
+
+      <button id="recommendBtn">Get My Recommendations</button>
+      <button id="routineBtn" style="margin-top:1rem; background:linear-gradient(90deg, #7C5CBF, #A78BDE); color:white;">Build My Daily Routine</button>
+    </div>
+
+    <div id="resultSection" class="card" style="display:none;"></div>
+  </div>
+
+  <script>
+    const skinTypes = ["sensitive", "dry", "oily", "acne-prone", "combination", "eczema"];
+    const commonConcerns = ["acne", "dryness", "dullness", "dark spots", "oil control", "brightening", "hydration", "anti-aging", "pore minimizing", "redness"];
+
+    let selectedSkin = [];
+    let selectedConcerns = [];
+
+    function createPills(containerId, items, selectedArray) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+      
+      items.forEach(item => {
+        const pill = document.createElement('div');
+        pill.className = 'pill';
+        pill.textContent = item.charAt(0).toUpperCase() + item.slice(1);
+        
+        pill.addEventListener('click', () => {
+          if (selectedArray.includes(item)) {
+            selectedArray.splice(selectedArray.indexOf(item), 1);
+            pill.classList.remove('active');
+          } else {
+            selectedArray.push(item);
+            pill.classList.add('active');
+          }
+        });
+        
+        container.appendChild(pill);
+      });
+    }
+
+    document.getElementById('recommendBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('recommendBtn');
+      btn.textContent = "Finding best products with AI...";
+      btn.disabled = true;
+
+      const res = await fetch('/api/recommend', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          skin_type: selectedSkin[0] || "sensitive",
+          concerns: selectedConcerns
+        })
+      });
+      const recs = await res.json();
+
+      renderRecommendations(recs);
+
+      btn.textContent = "Get My Recommendations ✨";
+      btn.disabled = false;
+    });
+
+    function renderRecommendations(recs) {
+      const section = document.getElementById('resultSection');
+      section.style.display = 'block';
+
+      let html = `<h2 style="text-align:center; margin-bottom:2rem;">Your Personalized Recommendations ✨</h2>`;
+
+      Object.keys(recs).forEach(category => {
+        if (!recs[category] || recs[category].length === 0) return;
+        html += `<h3 style="margin:2.5rem 0 1.5rem; text-align:center; color:var(--lav-800); font-size:1.35rem;">${category.replace('_', ' ').toUpperCase()}</h3>`;
+        html += `<div style="display:flex; gap:1.5rem; flex-wrap:wrap; justify-content:center; margin-bottom:3rem;">`;
+        
+        recs[category].forEach((product, index) => {
+          const hasExplanation = product.ai_explanation;
+          const isTop = index === 0; 
+
+          html += `
+            <div class="rec-card" style="width:280px; transition:all 0.3s; ${isTop ? 'border:2px solid #7C5CBF;' : ''}">
+              <img src="${product.image_url}" style="width:100%; height:160px; object-fit:cover; border-radius:16px;">
+              
+              ${isTop ? `<div style="background:#7C5CBF; color:white; text-align:center; padding:4px; font-size:0.8rem; border-radius:20px 20px 0 0;">⭐ Best Match for You</div>` : ''}
+              
+              <div style="padding:12px 14px;">
+                <h4 style="margin:8px 0 6px; text-align:center; font-size:1.1rem;">${product.name}</h4>
+                <p style="text-align:center; color:#666; font-size:0.95rem;">${product.brand} • ⭐ ${product.rating}</p>
+                <small style="display:block; text-align:center; margin:8px 0; font-weight:600;">₹${product.price_inr}</small>
+                
+                ${hasExplanation ? `
+                  <button onclick="toggleExplanation(this)" 
+                          style="margin:10px auto; display:block; background:#EDE8FF; color:#7C5CBF; border:none; padding:6px 18px; border-radius:50px; font-size:0.85rem; cursor:pointer;">
+                     Why this product?
+                  </button>
+                  <p class="ai-exp" style="display:none; font-size:0.92rem; color:#444; margin:10px 0; line-height:1.5; padding:0 8px;">
+                    ${product.ai_explanation}
+                  </p>
+                ` : ''}
+                
+                <a href="${product.buy_link}" target="_blank" 
+                  style="display:block; text-align:center; color:var(--lav-600); text-decoration:none; font-weight:600; margin-top:12px;">
+                  Buy on Nykaa →
+                </a>
+              </div>
+            </div>`;
+        });
+        html += `</div>`;
+      });
+
+      section.innerHTML = html;
+    }
+
+    createPills('skinTypesContainer', skinTypes, selectedSkin);
+    createPills('concernsContainer', commonConcerns, selectedConcerns);
+
+    function toggleExplanation(btn) {
+      const exp = btn.nextElementSibling;
+      if (exp.style.display === "none") {
+        exp.style.display = "block";
+        btn.textContent = "Hide Explanation";
+      } else {
+        exp.style.display = "none";
+        btn.textContent = "Why this product?";
+      }
+    }
+
+    document.getElementById('routineBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('routineBtn');
+      btn.textContent = "Building your personalized routine...";
+      btn.disabled = true;
+
+      const res = await fetch('/api/routine', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          skin_type: selectedSkin[0] || "sensitive",
+          concerns: selectedConcerns
+        })
+      });
+
+      const data = await res.json();
+
+      const resultSection = document.getElementById('resultSection');
+
+      if (resultSection.style.display === 'none') {
+        resultSection.style.display = 'block';
+      }
+
+      const routineHTML = `
+        <div id="routine-output" style="margin-top:2.5rem; padding:2rem; background:#F5F0FF; border-radius:24px;">
+          <h3 style="text-align:center; margin-bottom:1.2rem;">Your Personalized Daily Routine ✨</h3>
+          <pre style="white-space:pre-wrap; background:white; padding:1.5rem; border-radius:16px; line-height:1.7; font-family:inherit; font-size:1rem; color:#333;">${data.routine}</pre>
+        </div>`;
+
+      const existing = document.getElementById('routine-output');
+      if (existing) {
+        existing.outerHTML = routineHTML;
+      } else {
+        resultSection.innerHTML += routineHTML;
+      }
+
+      btn.textContent = "Build My Daily Routine";
+      btn.disabled = false;
+    });
+  </script>
+</body>
+</html>

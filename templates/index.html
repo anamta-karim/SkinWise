@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SkinWise</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --lav-50: #F5F0FF;
+      --lav-100: #EDE8FF;
+      --lav-200: #D8CCFF;
+      --lav-400: #A78BDE;
+      --lav-600: #7C5CBF;
+      --lav-800: #3D2878;
+      --lav-900: #1E1040;
+      --cream: #FDFBFF;
+      --muted: #8B7AAF;
+    }
+
+    html, body {
+      min-height: 100vh;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--cream);
+      color: var(--lav-900);
+      overflow-x: hidden;
+    }
+
+    .blob1 {
+      position: fixed; top: -120px; right: -80px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle at 40% 40%, #D8CCFF 0%, #EDE8FF 40%, transparent 70%);
+      border-radius: 50%; z-index: 0; pointer-events: none;
+      animation: floatA 8s ease-in-out infinite;
+    }
+    .blob2 {
+      position: fixed; bottom: -100px; left: -60px;
+      width: 420px; height: 420px;
+      background: radial-gradient(circle at 60% 60%, #E8E0FF 0%, transparent 65%);
+      border-radius: 50%; z-index: 0; pointer-events: none;
+      animation: floatB 10s ease-in-out infinite;
+    }
+    .blob3 {
+      position: fixed; top: 40%; left: 30%;
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(215,200,255,0.3) 0%, transparent 70%);
+      border-radius: 50%; z-index: 0; pointer-events: none;
+      animation: floatA 12s ease-in-out infinite reverse;
+    }
+
+    @keyframes floatA {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-20px) scale(1.03); }
+    }
+    @keyframes floatB {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(16px); }
+    }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.3rem 3rem;
+      background: rgba(253, 251, 255, 0.75);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(167, 139, 222, 0.15);
+    }
+
+    .logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.4rem; font-weight: 600;
+      color: var(--lav-800); letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--lav-400); }
+
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      text-decoration: none; color: var(--muted);
+      font-size: 0.85rem; font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--lav-600); }
+
+    .hero {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 7rem 2rem 4rem;
+    }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(167,139,222,0.15);
+      color: var(--lav-600);
+      font-size: 0.72rem; font-weight: 600;
+      letter-spacing: 1.8px; text-transform: uppercase;
+      padding: 0.45rem 1.1rem; border-radius: 50px;
+      border: 1px solid rgba(167,139,222,0.3);
+      margin-bottom: 2rem;
+      animation: fadeUp 0.7s ease both;
+    }
+    .badge-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--lav-400);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
+    }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.3rem, 5.2vw, 4.2rem);
+      line-height: 1.05; font-weight: 600;
+      color: var(--lav-900);
+      max-width: 720px;
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.7s 0.1s ease both;
+    }
+    h1 em { font-style: italic; color: var(--lav-600); }
+
+    .sub {
+      font-size: 1rem; color: var(--muted);
+      max-width: 440px; line-height: 1.75;
+      margin-bottom: 3.5rem; font-weight: 300;
+      animation: fadeUp 0.7s 0.2s ease both;
+    }
+
+    .cards {
+      display: flex; gap: 1.5rem; flex-wrap: wrap;
+      justify-content: center;
+      animation: fadeUp 0.7s 0.3s ease both;
+    }
+
+    .card {
+      width: 272px;
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(20px);
+      border-radius: 28px;
+      padding: 2.2rem 1.8rem;
+      text-align: left;
+      text-decoration: none; color: inherit;
+      border: 1px solid rgba(167,139,222,0.25);
+      box-shadow: 0 8px 32px rgba(124,92,191,0.08);
+      transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+      position: relative; overflow: hidden;
+    }
+    .card::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(167,139,222,0.08), transparent 60%);
+      opacity: 0; transition: opacity 0.3s;
+      border-radius: 28px;
+    }
+    .card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 56px rgba(124,92,191,0.18);
+      border-color: rgba(167,139,222,0.5);
+    }
+    .card:hover::after { opacity: 1; }
+
+    .card-icon {
+      width: 48px; height: 48px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; margin-bottom: 1.2rem;
+    }
+    .icon-a { background: rgba(167,139,222,0.18); }
+    .icon-b { background: rgba(124,92,191,0.12); }
+    .icon-c { background: rgba(167,139,222,0.14); }
+
+    .card h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.25rem; font-weight: 600;
+      color: var(--lav-900); margin-bottom: 0.55rem;
+    }
+    .card p {
+      font-size: 0.85rem; color: var(--muted);
+      line-height: 1.65; margin-bottom: 1.6rem; font-weight: 300;
+    }
+    .cta {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 0.85rem; font-weight: 600; color: var(--lav-600);
+    }
+    .cta svg { transition: transform 0.2s; }
+    .card:hover .cta svg { transform: translateX(5px); }
+
+    .features {
+      position: relative; z-index: 1;
+      display: flex; justify-content: center;
+      gap: 2.5rem; flex-wrap: wrap;
+      padding: 2.5rem 2rem;
+      animation: fadeUp 0.7s 0.4s ease both;
+    }
+    .feat {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.82rem; color: var(--muted);
+    }
+    .feat-icon {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: rgba(167,139,222,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem;
+    }
+
+    footer {
+      position: relative; z-index: 1;
+      text-align: center; padding: 2rem;
+      font-size: 0.78rem; color: var(--lav-200);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="blob1"></div>
+  <div class="blob2"></div>
+  <div class="blob3"></div>
+
+  <nav>
+    <div class="logo">Skin<span>Wise</span></div>
+    <ul class="nav-links">
+      <li><a href="/analyzer">Analyzer</a></li>
+      <li><a href="/recommender">Regimen</a></li>
+      <li><a href="/ethiscan">EthiScan</a></li>
+    </ul>
+  </nav>
+
+  <section class="hero">
+    <div class="badge"><div class="badge-dot"></div> AI-Powered Skincare</div>
+
+    <h1>Your skin deserves<br/><em>honest ingredients</em></h1>
+
+    <p class="sub">
+      Decode any product's ingredient list, discover products made for your skin type, or check if a brand is cruelty free — beautifully simple.
+    </p>
+
+    <div class="cards">
+      <a href="/analyzer" class="card">
+        <div class="card-icon icon-a">🔬</div>
+        <h3>Ingredient Analyzer</h3>
+        <p>Upload a photo or paste your ingredient list. Get a full safety breakdown tailored to your skin type.</p>
+        <div class="cta">
+          Start analyzing
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <path d="M3 7.5h9M8 3.5l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </a>
+
+      <a href="/recommender" class="card">
+        <div class="card-icon icon-b">✨</div>
+        <h3>Personal Regimen</h3>
+        <p>Tell us your skin type and concerns. Get personalized product recommendations + a complete daily &amp; night routine built just for you.</p>
+        <div class="cta">
+          Build my regimen
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <path d="M3 7.5h9M8 3.5l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </a>
+
+      <a href="/ethiscan" class="card">
+        <div class="card-icon icon-c">🐰</div>
+        <h3>EthiScan</h3>
+        <p>Check if a brand is cruelty free and vegan. Verified database of 100+ brands with certifications and notes.</p>
+        <div class="cta">
+          Check a brand
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <path d="M3 7.5h9M8 3.5l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <div class="features">
+    <div class="feat"><div class="feat-icon">👁️</div> OCR ingredient scanning</div>
+    <div class="feat"><div class="feat-icon">🌿</div> 385+ ingredient database</div>
+    <div class="feat"><div class="feat-icon">🇰🇷</div> K-beauty brand coverage</div>
+    <div class="feat"><div class="feat-icon">🎯</div> Skin type personalization</div>
+    <div class="feat"><div class="feat-icon">🐰</div> Cruelty free checker</div>
+  </div>
+
+  <footer>Made with care for healthy skin ✦</footer>
+
+</body>
+</html>

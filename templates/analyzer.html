@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analyzer • SkinWise</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --lav-50: #F5F0FF;
+      --lav-100: #EDE8FF;
+      --lav-200: #D8CCFF;
+      --lav-400: #A78BDE;
+      --lav-600: #7C5CBF;
+      --lav-800: #3D2878;
+      --lav-900: #1E1040;
+      --cream: #FDFBFF;
+      --muted: #8B7AAF;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--cream);
+      color: var(--lav-900);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+    .blob {
+      position: absolute;
+      background: radial-gradient(circle at 40% 40%, #D8CCFF 0%, #EDE8FF 40%, transparent 70%);
+      border-radius: 50%;
+      z-index: -1;
+      animation: float 25s ease-in-out infinite;
+    }
+    .blob1 { width: 500px; height: 500px; top: -120px; right: -80px; }
+    .blob2 { width: 420px; height: 420px; bottom: -100px; left: -60px; animation-delay: 8s; }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 2rem; position: relative; z-index: 2; }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 3.4rem;
+      text-align: center;
+      margin-bottom: 0.5rem;
+      color: var(--lav-600);
+    }
+
+    .card {
+      background: rgba(255,255,255,0.75);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(167,139,222,0.25);
+      border-radius: 28px;
+      box-shadow: 0 8px 32px rgba(124,92,191,0.08);
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .upload-box {
+      border: 3px dashed var(--lav-400);
+      border-radius: 28px;
+      padding: 3rem 2rem;
+      text-align: center;
+      background: rgba(255,255,255,0.6);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .upload-box:hover { background: var(--lav-100); }
+
+    .skin-types { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 1rem; }
+    .skin-pill {
+      padding: 12px 24px;
+      background: rgba(255,255,255,0.8);
+      border: 2px solid var(--lav-200);
+      border-radius: 50px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 2px 6px rgba(124,92,191,0.08);
+    }
+
+    .skin-pill:hover {
+      background: var(--lav-100);
+      border-color: var(--lav-400);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(124,92,191,0.15);
+    }
+
+    .skin-pill.active {
+      background: var(--lav-600);
+      color: white;
+      border-color: var(--lav-800);
+    }
+
+    button {
+      display: block;
+      margin: 2.5rem auto 0;
+      width: auto;
+      padding: 24px 56px;
+      font-size: 1.4rem;
+      font-weight: 600;
+      border-radius: 9999px;
+      background: linear-gradient(90deg, var(--lav-600), var(--lav-400));
+      color: white;
+      border: none;
+      box-shadow: 0 12px 30px rgba(124,92,191,0.4);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    button:hover { transform: translateY(-4px); }
+    button:disabled { opacity: 0.8; cursor: not-allowed; }
+
+    .score-circle {
+      width: 170px; height: 170px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3rem; font-weight: 700;
+      margin: 1.5rem auto;
+      border: 16px solid var(--lav-200);
+      background: conic-gradient(var(--lav-600) var(--score), var(--lav-200) var(--score));
+    }
+    .pill {
+      background: var(--lav-100);
+      color: var(--lav-800);
+      padding: 8px 22px;
+      border-radius: 50px;
+      font-size: 0.95rem;
+      margin: 6px 4px;
+      display: inline-block;
+    }
+    .rec-card {
+      background: rgba(255,255,255,0.75);
+      border-radius: 24px;
+      padding: 1rem;
+      width: 260px;
+      box-shadow: 0 8px 25px rgba(124,92,191,0.1);
+    }
+  </style>
+</head>
+<body>
+    <nav style="position: fixed; top: 0; left: 0; right: 0; background: rgba(253,251,255,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(167,139,222,0.15); padding: 1.3rem 3rem; display: flex; align-items: center; justify-content: space-between; z-index: 100;">
+      <div class="logo" style="font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 600; color: var(--lav-800); letter-spacing: -0.5px;">
+        Skin<span style="color: var(--lav-400);">Wise</span>
+      </div>
+      <div style="display: flex; gap: 2rem; font-weight: 500;">
+        <a href="/" style="text-decoration: none; color: var(--muted);">Home</a>
+        <a href="/analyzer" style="text-decoration: none; color: var(--muted);">Analyzer</a>
+        <a href="/recommender" style="text-decoration: none; color: var(--muted);">Regimen</a>
+        <a href="/ethiscan" style="text-decoration: none; color: var(--muted);">EthiScan</a>
+      </div>
+    </nav>
+
+<div style="height: 70px;"></div>
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+
+  <div class="container">
+    <h1>Ingredient Analyzer</h1>
+    <p style="text-align:center; color:var(--muted); font-size:1.3rem; margin-bottom:2rem;">Upload any skincare label • Get safety score, benefits & recommendations</p>
+
+<div style="text-align:center; margin-bottom:1.5rem;">
+  <span style="background:linear-gradient(90deg, #7C5CBF, #A78BDE); color:white; padding:6px 16px; border-radius:50px; font-size:0.85rem; font-weight:600; display:inline-flex; align-items:center; gap:6px;">✨ Powered by Groq AI</span>
+</div>
+
+    <div class="card">
+      <form id="analyzeForm" enctype="multipart/form-data">
+        <div class="upload-box" id="uploadBox">
+          <input type="file" id="image" name="image" accept="image/*" style="display:none;">
+          <h2>📸 Drop your product label here</h2>
+          <p id="fileName" style="margin-top:1rem; color:var(--muted);">No file chosen</p>
+        </div>
+
+        <div style="margin:2.5rem 0; text-align:center; color:var(--muted); font-size:1.2rem;">— OR paste ingredients —</div>
+        <textarea id="manual_text" rows="4" placeholder="Paste ingredients here..." style="width:100%; padding:1.6rem; border-radius:24px; border:2px solid var(--lav-200); background:rgba(255,255,255,0.9);"></textarea>
+
+        <div style="margin-top:2rem;">
+          <label style="font-weight:500; display:block; margin-bottom:1rem; text-align:center;">Your skin type(s) — choose all that apply</label>
+          <div class="skin-types" id="skinTypesContainer"></div>
+        </div>
+
+        <button type="submit" id="analyzeBtn">Analyze Ingredients</button>
+      </form>
+    </div>
+
+    <div id="resultSection" class="card" style="display:none;"></div>
+  </div>
+
+  <script>
+    const skinTypes = ["sensitive", "dry", "oily", "acne-prone", "combination", "eczema"];
+    let selectedSkinTypes = [];
+
+    function createSkinPills() {
+      const container = document.getElementById('skinTypesContainer');
+      container.innerHTML = '';
+      skinTypes.forEach(type => {
+        const pill = document.createElement('div');
+        pill.className = 'skin-pill';
+        pill.textContent = type.charAt(0).toUpperCase() + type.slice(1);
+        pill.dataset.value = type;
+        pill.addEventListener('click', () => {
+          if (selectedSkinTypes.includes(type)) {
+            selectedSkinTypes = selectedSkinTypes.filter(t => t !== type);
+            pill.classList.remove('active');
+          } else {
+            selectedSkinTypes.push(type);
+            pill.classList.add('active');
+          }
+        });
+        container.appendChild(pill);
+      });
+    }
+
+    const uploadBox = document.getElementById('uploadBox');
+    const fileInput = document.getElementById('image');
+    const fileNameDisplay = document.getElementById('fileName');
+
+    uploadBox.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 0) {
+        fileNameDisplay.textContent = "✓ " + fileInput.files[0].name;
+        fileNameDisplay.style.color = 'var(--lav-600)';
+      }
+    });
+
+    document.getElementById('analyzeForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('analyzeBtn');
+      btn.textContent = "Analyzing with AI...";
+      btn.disabled = true;
+
+      const formData = new FormData();
+      const imageFile = fileInput.files[0];
+      const manualText = document.getElementById('manual_text').value.trim();
+
+      if (imageFile) formData.append('image', imageFile);
+      if (manualText) formData.append('manual_text', manualText);
+      selectedSkinTypes.forEach(s => formData.append('skin_type', s));
+
+      const res = await fetch('/api/analyze', { method: 'POST', body: formData });
+      const data = await res.json();
+      console.log("✅ API response received:", data);   // ← debug line
+
+      renderResults(data);
+
+      btn.textContent = "Analysis Complete";
+      btn.disabled = true;
+    });
+
+    function renderResults(data) {
+      console.log("🚀 renderResults started", data);
+      const section = document.getElementById('resultSection');
+      section.style.display = 'block';
+
+      let html = `
+        <h2 style="text-align:center; margin-bottom:1.5rem;">Your Analysis Results ✨</h2>
+        <div style="text-align:center;">
+          <div class="score-circle" style="--score: ${data.score}%;">${data.score}<span style="font-size:1rem;">/100</span></div>
+        </div>
+
+        <!-- NEW: Analyzed count + AI badge -->
+        <p style="text-align:center; color:var(--muted); font-size:0.95rem; margin-bottom:1.5rem;">
+          Analyzed ${data.ingredients.length} ingredients • ✨ AI-enhanced
+        </p>
+      `; 
+      
+      const safeItems    = data.results.filter(r => r.concern_level === 'Safe');
+      const cautionItems = data.results.filter(r => r.concern_level === 'Caution');
+      const avoidItems   = data.results.filter(r => r.concern_level === 'Avoid');
+
+      function buildList(items, showExplanation) {
+        if (!items.length) return '<p style="color:var(--muted); font-size:0.9rem; padding:0.5rem 0;">None detected.</p>';
+        return items.map(i => `
+          <div style="padding: 0.8rem 1rem; margin-bottom:0.6rem; background:rgba(255,255,255,0.6); border-radius:16px; border:1px solid rgba(167,139,222,0.15);">
+            <span style="font-weight:600; color:var(--lav-800);">${i.matched_name}</span>
+            ${showExplanation && i.explanation
+              ? `<p style="font-size:0.9rem; color:#555; margin-top:8px; line-height:1.5;">${i.explanation}</p>`
+              : ''}
+          </div>
+        `).join('');
+      }
+
+      html += `
+      <div style="display:flex; justify-content:center; gap:1.5rem; flex-wrap:wrap; margin:1.5rem 0;">
+
+        <div style="text-align:center;">
+          <div class="pill" style="cursor:pointer;" onclick="toggleDrop('safe-drop')">
+            Safe: ${data.safe_count} ▾
+          </div>
+          <div id="safe-drop" style="display:none; text-align:left; margin-top:8px; background:rgba(255,255,255,0.9); border:1px solid rgba(167,139,222,0.2); border-radius:16px; padding:1rem; min-width:200px; max-height:220px; overflow-y:auto;">
+            ${buildList(safeItems, false)}
+          </div>
+        </div>
+
+        <div style="text-align:center;">
+          <div class="pill" style="background:#FFF3E0; color:#F57C00; cursor:pointer;" onclick="toggleDrop('caution-drop')">
+            Caution: ${data.caution_count} ▾
+          </div>
+          <div id="caution-drop" style="display:none; text-align:left; margin-top:8px; background:rgba(255,255,255,0.9); border:1px solid rgba(167,139,222,0.2); border-radius:16px; padding:1rem; min-width:220px; max-height:220px; overflow-y:auto;">
+            ${buildList(cautionItems, true)}
+          </div>
+        </div>
+
+        <div style="text-align:center;">
+          <div class="pill" style="background:#FFEBEE; color:#D32F2F; cursor:pointer;" onclick="toggleDrop('avoid-drop')">
+            Avoid: ${data.avoid_count} ▾
+          </div>
+          <div id="avoid-drop" style="display:none; text-align:left; margin-top:8px; background:rgba(255,255,255,0.9); border:1px solid rgba(167,139,222,0.2); border-radius:16px; padding:1rem; min-width:220px; max-height:220px; overflow-y:auto;">
+            ${buildList(avoidItems, true)}
+          </div>
+        </div>
+
+      </div>`;
+
+      const benefitCount = {};
+      data.results.forEach(r => {
+        if (r.benefit) benefitCount[r.benefit] = (benefitCount[r.benefit] || 0) + 1;
+      });
+      const aggregated = Object.keys(benefitCount).filter(b => benefitCount[b] >= 1);
+
+      if (aggregated.length) {
+        html += `<h3 style="margin:2rem 0 1rem; text-align:center;">Key Benefits Detected</h3><div style="text-align:center; margin-bottom:2rem;">`;
+        aggregated.forEach(b => html += `<span class="pill">${b} <small>(${benefitCount[b]})</small></span>`);
+        html += `</div>`;
+      }
+
+      if (data.flagged && data.flagged.length) {
+        html += `
+          <h3 style="margin:1.5rem 0 1rem; color:#D32F2F; text-align:center;">⚠️ Flagged Ingredients</h3>
+          <p style="text-align:center; font-size:0.95rem; color:#666; margin-bottom:1.2rem; max-width:600px; margin-left:auto; margin-right:auto;">
+            Only ingredients that may be risky <strong>for your selected skin type</strong> are shown here
+          </p>`;
+
+        data.flagged.forEach(item => {
+          html += `
+          <div style="background:#F8EBFF; padding:1.4rem; margin-bottom:1rem; border-radius:20px; text-align:left; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+              <strong style="font-size:1.05rem; color:#D32F2F;">${item.matched_name || item.ingredient}</strong>
+              <span style="background:#EDE8FF; color:#7C5CBF; font-size:0.75rem; padding:2px 10px; border-radius:9999px; font-weight:600;">AI Explanation</span>
+            </div>
+            <p style="margin-top:4px; color:#444; line-height:1.6; font-size:0.97rem;">
+              ${item.explanation || ''}
+            </p>
+          </div>`;
+        });
+      }
+
+      html += `<div id="recsContainer" style="display:flex; gap:1.2rem; flex-wrap:wrap; justify-content:center;"></div>`;
+
+      html += `<button onclick="resetAnalyzer()" style="background:#EDE8FF; color:var(--lav-800); margin-top:2rem;">Analyze Another Product</button>`;
+
+      section.innerHTML = html;
+      //loadSmartRecommendations(aggregated);
+    }
+
+    async function loadSmartRecommendations(benefits) {
+      const container = document.getElementById('recsContainer');
+      
+      try {
+        const res = await fetch('/api/recommend', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ skin_type: selectedSkinTypes[0] || "sensitive", concerns: benefits })
+        });
+
+        if (!res.ok) return;
+
+        const text = await res.text();
+        console.log("Raw recommend response:", text);
+
+        const sanitizedText = text.replace(/:\s*NaN/g, ':null');
+        const recs = JSON.parse(sanitizedText);
+
+        container.innerHTML = '';
+        Object.keys(recs).forEach(cat => {
+          if (recs[cat] && recs[cat].length) {
+            recs[cat].slice(0, 2).forEach(p => {
+              container.innerHTML += `
+                <div class="rec-card">
+                  <img src="${p.image_url}" style="width:100%; height:140px; object-fit:cover; border-radius:16px;">
+                  <h4 style="margin:10px 0 4px; text-align:center;">${p.name}</h4>
+                  <p style="font-size:0.9rem; color:#666; text-align:center;">${p.brand} • ⭐ ${p.rating}</p>
+                  <small style="display:block; text-align:center;">₹${p.price_inr}</small>
+                </div>`;
+            });
+          }
+        });
+      } catch (e) {
+        console.log("Recommendations skipped (NaN error fixed for now)");
+      }
+    }
+
+    function resetAnalyzer() {
+      location.reload();
+    }
+
+    function toggleDrop(id) {
+      const el = document.getElementById(id);
+      el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+
+    createSkinPills();
+  </script>
+</body>
+</html>

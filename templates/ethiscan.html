@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EthiScan • SkinWise</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --lav-50: #F5F0FF;
+      --lav-100: #EDE8FF;
+      --lav-200: #D8CCFF;
+      --lav-400: #A78BDE;
+      --lav-600: #7C5CBF;
+      --lav-800: #3D2878;
+      --lav-900: #1E1040;
+      --cream: #FDFBFF;
+      --muted: #8B7AAF;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--cream);
+      color: var(--lav-900);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+    .blob {
+      position: absolute;
+      background: radial-gradient(circle at 40% 40%, #D8CCFF 0%, #EDE8FF 40%, transparent 70%);
+      border-radius: 50%;
+      z-index: -1;
+      animation: float 25s ease-in-out infinite;
+    }
+    .blob1 { width: 500px; height: 500px; top: -120px; right: -80px; }
+    .blob2 { width: 420px; height: 420px; bottom: -100px; left: -60px; animation-delay: 8s; }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 2rem; position: relative; z-index: 2; }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 3.4rem;
+      text-align: center;
+      margin-bottom: 0.5rem;
+      color: var(--lav-600);
+    }
+
+    .card {
+      background: rgba(255,255,255,0.75);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(167,139,222,0.25);
+      border-radius: 28px;
+      box-shadow: 0 8px 32px rgba(124,92,191,0.08);
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .search-box {
+      width: 100%;
+      padding: 1.4rem 2rem;
+      font-size: 1.3rem;
+      border: 2px solid var(--lav-200);
+      border-radius: 9999px;
+      background: rgba(255,255,255,0.9);
+      outline: none;
+    }
+    .search-box:focus { border-color: var(--lav-600); }
+
+    .pill {
+      padding: 10px 22px;
+      background: rgba(255,255,255,0.8);
+      border: 2px solid var(--lav-200);
+      border-radius: 50px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 2px 6px rgba(124,92,191,0.08);
+    }
+
+    .pill:hover {
+      background: var(--lav-100);
+      border-color: var(--lav-400);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(124,92,191,0.15);
+    }
+
+    .pill:active {
+      background: var(--lav-600);
+      color: white;
+      border-color: var(--lav-800);
+    }
+
+    button {
+      display: block;
+      margin: 1.5rem auto 0;
+      width: auto;
+      padding: 18px 48px;
+      font-size: 1.3rem;
+      font-weight: 600;
+      border-radius: 9999px;
+      background: linear-gradient(90deg, var(--lav-600), var(--lav-400));
+      color: white;
+      border: none;
+      box-shadow: 0 12px 30px rgba(124,92,191,0.4);
+      cursor: pointer;
+    }
+    button:hover { transform: translateY(-3px); }
+  </style>
+</head>
+<body>
+    <nav style="position: fixed; top: 0; left: 0; right: 0; background: rgba(253,251,255,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(167,139,222,0.15); padding: 1.3rem 3rem; display: flex; align-items: center; justify-content: space-between; z-index: 100;">
+      <div class="logo" style="font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 600; color: var(--lav-800); letter-spacing: -0.5px;">
+        Skin<span style="color: var(--lav-400);">Wise</span>
+      </div>
+      <div style="display: flex; gap: 2rem; font-weight: 500;">
+        <a href="/" style="text-decoration: none; color: var(--muted);">Home</a>
+        <a href="/analyzer" style="text-decoration: none; color: var(--muted);">Analyzer</a>
+        <a href="/recommender" style="text-decoration: none; color: var(--muted);">Regimen</a>
+        <a href="/ethiscan" style="text-decoration: none; color: var(--muted);">EthiScan</a>
+      </div>
+    </nav>
+
+<div style="height: 70px;"></div>
+
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+
+  <div class="container">
+    <h1>EthiScan</h1>
+    <p style="text-align:center; color:var(--muted); font-size:1.3rem; margin-bottom:2rem;">Check if any brand is cruelty-free & vegan instantly</p>
+
+<div style="text-align:center; margin-bottom:1.5rem;">
+  <span style="background:linear-gradient(90deg, #7C5CBF, #A78BDE); color:white; padding:6px 16px; border-radius:50px; font-size:0.85rem; font-weight:600; display:inline-flex; align-items:center; gap:6px;">✨ Powered by Groq AI</span>
+</div>
+
+    <div class="card">
+      <input type="text" id="brandInput" class="search-box" placeholder="Type brand name (e.g. Plum, Minimalist, Cetaphil...)" onkeypress="if(event.key==='Enter') checkBrand()">
+
+      <div class="quick-pills" id="quickPills" style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin:1.5rem 0;"></div>
+
+      <button onclick="checkBrand()">Check Brand →</button>
+    </div>
+
+    <div id="resultSection" class="card" style="display:none;"></div>
+  </div>
+
+  <script>
+    const popularBrands = ["Plum", "Minimalist", "Dot & Key", "The Ordinary", "COSRX", "Cetaphil", "CeraVe", "Foxtale", "Hyphen", "Wishcare"];
+
+    function createQuickPills() {
+      const container = document.getElementById('quickPills');
+      popularBrands.forEach(name => {
+        const pill = document.createElement('div');
+        pill.className = 'pill';
+        pill.textContent = name;
+        pill.addEventListener('click', () => {
+          document.getElementById('brandInput').value = name;
+          checkBrand();
+        });
+        container.appendChild(pill);
+      });
+    }
+
+    async function checkBrand() {
+      const input = document.getElementById('brandInput').value.trim();
+      if (!input) return alert("Please enter a brand name");
+
+      const section = document.getElementById('resultSection');
+      section.style.display = 'block';
+      section.innerHTML = `
+        <div style="text-align:center; padding:4rem 2rem; color:var(--muted);">
+          <p style="font-size:1.4rem;">Analyzing brand with AI...</p>
+        </div>`;
+
+      const res = await fetch('/api/check_brand', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({brand_name: input})
+      });
+      const data = await res.json();
+
+      let html = `<h2 style="text-align:center; margin-bottom:1.5rem;">${data.name}</h2>`;
+
+      if (data.cruelty_free === true) {
+        html += `<div style="background:#E0F2E9; color:#1A8C4E; padding:12px 28px; border-radius:50px; font-size:1.2rem; font-weight:600; display:inline-flex; align-items:center; gap:8px; margin-bottom:1rem;">✅ Cruelty-Free</div>`;
+      } else if (data.cruelty_free === false) {
+        html += `<div style="background:#FFEBEE; color:#D32F2F; padding:12px 28px; border-radius:50px; font-size:1.2rem; font-weight:600; display:inline-flex; align-items:center; gap:8px; margin-bottom:1rem;">❌ Not Cruelty-Free</div>`;
+      }
+
+      if (data.vegan !== null) {
+        html += `<div style="margin:1rem 0; font-size:1.2rem;">${data.vegan ? '🌱 Vegan' : '🐮 Not Vegan'}</div>`;
+      }
+
+      if (data.certification && data.certification.length) {
+        html += `<p><strong>Certifications:</strong> ${data.certification.join(', ')}</p>`;
+      }
+
+      if (data.ai_explanation) {
+        html += `
+          <div style="margin-top:1.8rem; background:#F5F0FF; padding:1.5rem; border-radius:24px; border-left:5px solid #7C5CBF;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+              <span style="font-size:1.3rem;"></span>
+              <strong style="color:#7C5CBF; font-size:1.05rem;">AI Analysis</strong>
+            </div>
+            <p style="margin:0; line-height:1.65; color:#333;">${data.ai_explanation}</p>
+          </div>`;
+      }
+
+      if (data.note && !data.ai_explanation) {
+        html += `<p style="margin-top:1.5rem; color:#555;">${data.note}</p>`;
+      }
+
+      html += `<p style="margin-top:2rem; font-size:0.9rem; color:var(--muted); text-align:center;">Source: ${data.source || 'Our database'}</p>`;
+
+      section.innerHTML = html;
+    }
+
+    createQuickPills();
+  </script>
+</body>
+</html>

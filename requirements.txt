@@ -1,0 +1,27 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+# Core Web Framework
+Flask==3.0.3
+
+# AI/ML & OCR
+easyocr==1.7.2
+sentence-transformers==3.4.1
+torch==2.4.1+cpu
+torchvision==0.19.1+cpu
+torchaudio==2.4.1+cpu
+
+# Data & Matching
+pandas==2.2.3
+rapidfuzz==3.13.0
+numpy==1.26.4
+
+# LLM Integration
+groq==0.11.0
+
+# Utilities
+python-dotenv==1.0.1
+Pillow==10.4.0
+
+# Optional (only if you are still using them)
+# scikit-learn==1.5.0
+# joblib==1.4.2
