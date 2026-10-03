@@ -172,6 +172,10 @@
           <p id="fileName" style="margin-top:1rem; color:var(--muted);">No file chosen</p>
         </div>
 
+        <div style="margin:2.5rem 0 1.5rem; text-align:center; color:var(--muted); font-size:1.2rem;">— OR search any product by name —</div>
+        <input type="text" id="product_name" placeholder="e.g. Minimalist 10% Niacinamide Serum"
+              style="width:100%; padding:1.2rem 1.6rem; border-radius:9999px; border:2px solid var(--lav-200); background:rgba(255,255,255,0.9); font-size:1.05rem; outline:none;">
+
         <div style="margin:2.5rem 0; text-align:center; color:var(--muted); font-size:1.2rem;">— OR paste ingredients —</div>
         <textarea id="manual_text" rows="4" placeholder="Paste ingredients here..." style="width:100%; padding:1.6rem; border-radius:24px; border:2px solid var(--lav-200); background:rgba(255,255,255,0.9);"></textarea>
 
@@ -236,13 +240,27 @@
 
       if (imageFile) formData.append('image', imageFile);
       if (manualText) formData.append('manual_text', manualText);
+      const productName = document.getElementById('product_name').value.trim();
+      if (productName) formData.append('product_name', productName);
       selectedSkinTypes.forEach(s => formData.append('skin_type', s));
 
       const res = await fetch('/api/analyze', { method: 'POST', body: formData });
       const data = await res.json();
-      console.log("✅ API response received:", data);   // ← debug line
+      console.log("✅ API response received:", data);
+      if (data.error) {
+        const sec = document.getElementById('resultSection');
+        sec.style.display = 'block';
+        sec.innerHTML = `<p style="text-align:center; color:#D32F2F;">${data.error}</p>`;
+        btn.textContent = "Analyze Ingredients";
+        btn.disabled = false;
+        return;
+      }
 
       renderResults(data);
+      if (data.sources && data.sources.length) {
+        document.getElementById('resultSection').insertAdjacentHTML('beforeend',
+          `<p style="text-align:center; font-size:0.85rem; color:var(--muted); margin-top:1.5rem;">Ingredients found via Google Search (may be incomplete, verify on the pack): ${data.sources.map(s => `<a href="${s.link}" target="_blank" style="color:#7C5CBF;">${s.title.slice(0, 40)}…</a>`).join(' • ')}</p>`);
+      }
 
       btn.textContent = "Analysis Complete";
       btn.disabled = true;
@@ -315,7 +333,7 @@
 
       const benefitCount = {};
       data.results.forEach(r => {
-        if (r.benefit) benefitCount[r.benefit] = (benefitCount[r.benefit] || 0) + 1;
+        if (r.benefit) r.benefit.split(',').map(b => b.trim().toLowerCase()).filter(b => b && b !== 'none').forEach(b => { benefitCount[b] = (benefitCount[b] || 0) + 1; });
       });
       const aggregated = Object.keys(benefitCount).filter(b => benefitCount[b] >= 1);
 

@@ -3,6 +3,8 @@ import os
 import json
 import time
 from ocr_utils import extract_ingredients
+from serpapi_utils import price_compare, discover_products, search_snippets, fetch_ingredient_context, find_comma_lists
+from analysis_utils import terms_only
 from analysis_utils import analyze_ingredients, calculate_safety_score
 from rapidfuzz import process, fuzz
 from groq import Groq
@@ -13,7 +15,16 @@ from sentence_transformers import util
 from dotenv import load_dotenv
 import os
 load_dotenv()
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
+print("Groq model:", GROQ_MODEL)
+_orig_create = groq_client.chat.completions.create
+def _create(*args, **kwargs):
+    kwargs["model"] = GROQ_MODEL
+    kwargs["max_tokens"] = kwargs.get("max_tokens", 300) + 700
+    kwargs.setdefault("extra_body", {"reasoning_effort": "low"})
+    return _orig_create(*args, **kwargs)
+groq_client.chat.completions.create = _create
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
@@ -56,7 +67,7 @@ Return ONLY the list, nothing else. Example: ["water", "glycerin", "niacinamide"
 Text: {raw_ocr_text}"""
 
         completion = groq_client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model=GROQ_MODEL,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.0,
             max_tokens=500
@@ -88,7 +99,7 @@ Concern level: {concern_level}
 Reply in natural, helpful tone. Do not use technical jargon unless necessary."""
 
         completion = groq_client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model=GROQ_MODEL,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
             max_tokens=300
@@ -113,7 +124,7 @@ is a good recommendation for {skin_type} skin concerned with {concerns_str}.
 Keep it concise, natural and helpful. Do not write long paragraphs."""
 
         completion = groq_client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model=GROQ_MODEL,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
             max_tokens=200
@@ -137,7 +148,7 @@ Important rules:
 - Do NOT use any markdown formatting like ** or *.
 - Do NOT use bold or italic.
 - Suggest product types along with key helpful ingredients.
-  Example: "Gentle niacinamide cleanser", "Salicylic acid serum", "Lightweight hyaluronic acid moisturizer"
+- Example: "Gentle niacinamide cleanser", "Salicylic acid serum", "Lightweight hyaluronic acid moisturizer"
 - Keep routines to 3–5 steps each.
 - Use logical order (cleanse → treat → moisturize → protect).
 - Be friendly, practical and encouraging.
@@ -153,7 +164,7 @@ Night:
 2. ..."""
 
         completion = groq_client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model=GROQ_MODEL,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
             max_tokens=450
@@ -191,7 +202,7 @@ Recommended Order:
 Be honest, helpful, and concise."""
 
         completion = groq_client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model=GROQ_MODEL,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.6,
             max_tokens=400
@@ -231,7 +242,7 @@ Mention if it is cruelty-free and/or vegan, and add one useful insight from this
 Keep it warm, concise, and helpful. Do not repeat basic facts."""
 
         completion = groq_client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model=GROQ_MODEL,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
             max_tokens=220
@@ -246,9 +257,9 @@ Keep it warm, concise, and helpful. Do not repeat basic facts."""
 def get_product_embedding(product):
     """Create a rich description and get its embedding"""
     description = f"{product['name']} by {product['brand']}. " \
-                  f"For {', '.join(product.get('skin_types', []))}. " \
-                  f"Helps with {', '.join(product.get('concerns', []))}. " \
-                  f"Key ingredients: {', '.join(product.get('key_ingredients', []))}"
+                f"For {', '.join(product.get('skin_types', []))}. " \
+                f"Helps with {', '.join(product.get('concerns', []))}. " \
+                f"Key ingredients: {', '.join(product.get('key_ingredients', []))}"
     
     return embedding_model.encode(description, convert_to_tensor=True)
 
@@ -273,6 +284,8 @@ def analyze():
     skin_type = request.form.getlist('skin_type')
     image = request.files.get('image')
     manual_text = request.form.get('manual_text', '')
+    product_name = request.form.get('product_name', '').strip()
+    sources = []
 
     if image and image.filename:
         start_ocr = time.time()
@@ -291,8 +304,20 @@ def analyze():
         
         ocr_time = time.time() - start_ocr
         print(f"⏱️ OCR took {ocr_time:.2f} seconds")
-    else:
+    
+    elif manual_text.strip():
         ingredients = [i.strip() for i in manual_text.split(',') if i.strip()]
+
+    elif product_name:
+        try:
+            ingredients, sources = get_product_ingredients(product_name)
+        except Exception as e:
+            return jsonify({'error': f'Live search failed: {e}'}), 502
+        if len(ingredients) < 3:
+            return jsonify({'error': "Couldn't find a reliable ingredient list for that product online. Try the full product name, or paste the ingredients."}), 404
+
+    else:
+        ingredients = []
 
     try:
         start_analysis = time.time()
@@ -344,7 +369,8 @@ def analyze():
             'flagged': safe_flagged,
             'safe_count': results.get('safe_count', 0),
             'caution_count': results.get('caution_count', 0),
-            'avoid_count': results.get('avoid_count', 0)
+            'avoid_count': results.get('avoid_count', 0),
+            'sources': sources
         })
     except Exception as e:
         import traceback
@@ -477,6 +503,141 @@ def check_compatibility_route():
         'items': items,
         'compatibility_result': result
     })
+
+@app.route('/api/prices', methods=['POST'])
+def api_prices():
+    data = request.get_json() or {}
+    name = data.get('name', '').strip()
+    if not name:
+        return jsonify({'error': 'name required'}), 400
+    return jsonify(price_compare(data.get('brand', ''), name))
+
+import ast, re
+
+def extract_ingredients_from_snippets(title, snippets):
+    text = "\n".join(f"- {s['title']}: {s['snippet']}" for s in snippets if s.get('snippet'))
+    if not text:
+        return []
+    prompt = f"""Below is text from web pages about the skincare product "{title}".
+Extract the product's ingredient list (INCI names) ONLY if it is explicitly written in the text.
+Do not guess or add ingredients from your own knowledge. If no ingredient list appears, return [].
+Return ONLY a Python list of lowercase strings.
+
+Text:
+{text}"""
+    try:
+        completion = groq_client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.0, max_tokens=500)
+        raw = completion.choices[0].message.content.strip()
+        m = re.search(r"\[.*\]", raw, re.S)
+        items = ast.literal_eval(m.group(0)) if m else []
+        items = [str(i).strip().lower() for i in items if str(i).strip()]
+        text_l = text.lower()
+        kept = [i for i in items if i in text_l]   # drop anything not literally in the source
+        print(f"   model returned {len(items)} ingredients, {len(kept)} found in the source text")
+        return kept
+    except Exception as e:
+        print(f"⚠️ Ingredient extraction failed: {e}")
+        return []
+
+PREFERRED_SITES = ("incidecoder.com", "skincarisma.com", "minimalist.co", "nykaa.com", "purplle.com")
+SKIP_SITES = ("amazon.", "flipkart.", "youtube.", "instagram.", "facebook.", "reddit.", "pinterest.", "taobao.")
+
+def clean_title(title):
+    t = title.split('|')[0]
+    t = re.sub(r'\(.*?\)', ' ', t)
+    t = t.split(',')[0]
+    t = re.sub(r'(?i)\b(with|for)\b.*$', ' ', t)
+    t = re.sub(r'(?i)\b(pack of \d+|\d+\s?(ml|g|gm|gms|oz))\b', ' ', t)
+    t = re.sub(r'\s+', ' ', t).strip()
+    return ' '.join(t.split()[:8])
+
+def _norm(i):
+    """lowercase, drop (parentheses) and percentages like 10%"""
+    return re.sub(r'\s+', ' ', re.sub(r'\([^)]*\)|\d+(\.\d+)?\s*%', ' ', i.lower())).strip()
+
+def looks_like_inci(items):
+    """A candidate list only counts if it mostly matches our ingredient database."""
+    if len(items) < 6:
+        return False
+    hits = sum(1 for it in items
+            if process.extractOne(_norm(it), terms_only, scorer=fuzz.ratio, score_cutoff=85))
+    return hits / len(items) >= 0.35
+
+def get_product_ingredients(title):
+    """Free list-scan on snippets, then whole pages, then AI extraction as last resort."""
+    short = clean_title(title)
+    sources = []
+    for query in (f"{short} ingredients", f"{short} incidecoder ingredients"):
+        snippets, _ = search_snippets(query)
+        sources = [{'title': s['title'], 'link': s['link']} for s in snippets[:3]]
+        print(f"🔎 '{query}' -> {[s['link'][:50] for s in snippets]}")
+
+        # 1) does any snippet already contain a valid-looking list?
+        for l in find_comma_lists(" | ".join(s['snippet'] for s in snippets)):
+            if looks_like_inci(l):
+                print("   ✅ valid list found in snippets")
+                return l, sources
+
+        # 2) read the pages themselves
+        def rank(s):
+            return 0 if any(d in s['link'] for d in PREFERRED_SITES) else 1
+        candidates = [s for s in sorted(snippets, key=rank)
+                    if s['link'] and not any(d in s['link'] for d in SKIP_SITES)]
+        for s in candidates[:4]:
+            page = fetch_ingredient_context(s['link'])
+            valid = [l for l in page['lists'] if looks_like_inci(l)]
+            print(f"   page {s['link'][:50]} -> {len(page['lists'])} candidate lists, {len(valid)} valid")
+            if valid:
+                return max(valid, key=len), [{'title': s['title'], 'link': s['link']}]
+            if page['windows']:
+                found = extract_ingredients_from_snippets(short, [{'title': s['title'], 'snippet': page['windows']}])
+                if len(found) >= 3:
+                    return found, [{'title': s['title'], 'link': s['link']}]
+    return [], sources
+
+@app.route('/api/recommend_live', methods=['POST'])
+def recommend_live():
+    d = request.get_json() or {}
+    skin_type = (d.get('skin_type') or 'sensitive').lower()
+    concerns = [c.lower() for c in d.get('concerns', [])]
+    categories = d.get('categories') or ['serum_essence', 'moisturizer', 'sunscreen']
+    out = {}
+    for cat in categories:
+        try:
+            out[cat] = discover_products(cat, skin_type, concerns)
+        except Exception as e:
+            print(f"⚠️ SerpApi discovery failed for {cat}: {e}")
+            out[cat] = []
+    return jsonify(out)
+
+@app.route('/api/live_analyze', methods=['POST'])
+def live_analyze():
+    d = request.get_json() or {}
+    title = d.get('title', '').strip()
+    skin_type = (d.get('skin_type') or '').lower() or None
+    if not title:
+        return jsonify({'error': 'title required'}), 400
+    try:
+        ingredients, sources = get_product_ingredients(title)
+        if len(ingredients) < 3:
+            return jsonify({'found': False, 'sources': sources})
+        results = analyze_ingredients(ingredients, skin_type=skin_type)
+        return jsonify({
+            'found': True,
+            'ingredients': ingredients,
+            'score': calculate_safety_score(results),
+            'flagged': [{'ingredient': r.get('ingredient_name', ''),
+                        'concern_level': r.get('concern_level', ''),
+                        'explanation': r.get('explanation', '')} for r in results['flagged']],
+            'sources': sources
+        })
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'found': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=7860)

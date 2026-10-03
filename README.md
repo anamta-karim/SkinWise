@@ -77,15 +77,12 @@ git clone https://github.com/anamta-karim/SkinWise.git
 cd SkinWise
 
 # 2. Activate virtual environment
-venv310\Scripts\activate
+python -m venv venv
 
-# 3. Create a .env file and add your Groq API key
-echo GROQ_API_KEY=ygsk_AX7BmtWQeTUAXIPhwKbgWGdyb3FYEPO0C4PhxqMD9VO6SyU > .env
-
-# 4. Install dependencies
+# 3. Install dependencies
 pip install -r requirements.txt
 
-# 5. Run the app
+# 4. Run the app
 python app.py
 ```
 

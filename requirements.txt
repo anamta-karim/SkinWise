@@ -25,3 +25,5 @@ Pillow==10.4.0
 # Optional (only if you are still using them)
 # scikit-learn==1.5.0
 # joblib==1.4.2
+
+requests

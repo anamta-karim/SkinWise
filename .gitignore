@@ -216,3 +216,4 @@ Untitled.ipynb
 *.pkl
 static/uploads/
 test_images/
+data/serpapi_cache.json

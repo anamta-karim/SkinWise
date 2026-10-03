@@ -5,7 +5,15 @@ import torch
 
 # Load database
 db = pd.read_csv('data/ingredients_database.csv', encoding='latin-1')
+def _fix_text(x):
+    if isinstance(x, str):
+        try:
+            return x.encode('latin-1').decode('utf-8')
+        except (UnicodeEncodeError, UnicodeDecodeError):
+            return x
+    return x
 
+db = db.apply(lambda col: col.map(_fix_text))
 # Build search index
 search_terms = []
 for idx, row in db.iterrows():
