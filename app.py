@@ -3,7 +3,7 @@ import os
 import json
 import time
 from ocr_utils import extract_ingredients
-from serpapi_utils import price_compare, discover_products, search_snippets, fetch_ingredient_context, find_comma_lists, shopping_search, CATEGORY_QUERY, amazon_ingredient_candidates
+from serpapi_utils import price_compare, discover_products, search_snippets, fetch_ingredient_context, find_comma_lists, shopping_search, CATEGORY_QUERY, amazon_ingredient_candidates, brand_evidence
 from analysis_utils import terms_only
 from analysis_utils import analyze_ingredients, calculate_safety_score
 from rapidfuzz import process, fuzz
@@ -422,8 +422,7 @@ def recommend():
 
     return jsonify(recommendations)
 
-@app.route('/api/check_brand', methods=['POST'])
-def check_brand():
+def check_brand_base():
     data = request.get_json()
     brand_input = data.get('brand_name', '').strip().lower()
 
@@ -440,36 +439,26 @@ def check_brand():
                 brand_data['ai_explanation'] = ai_analysis
             return jsonify(brand_data)
 
-    query_embedding = embedding_model.encode(brand_input, convert_to_tensor=True)
-    similarities = util.cos_sim(query_embedding, brand_embeddings)[0]
-    
-    best_score, best_idx = torch.max(similarities, dim=0)
-    best_score = float(best_score)
-
-    if best_score > 0.55:
-        matched_brand = brand_metadata[best_idx.item()].copy()
-        ai_analysis = generate_brand_analysis(matched_brand)
+    # typo-tolerant match on names and aliases (brand names aren't semantic, so no embeddings here)
+    candidates = {}
+    for b in BRANDS:
+        candidates[b['name'].lower()] = b
+        for a in b.get('aliases', []):
+            candidates[a.lower()] = b
+    match = process.extractOne(brand_input, list(candidates.keys()), scorer=fuzz.ratio)
+    if match and match[1] >= 90:
+        brand_data = candidates[match[0]].copy()
+        ai_analysis = generate_brand_analysis(brand_data)
         if ai_analysis:
-            matched_brand['ai_explanation'] = ai_analysis
-        return jsonify(matched_brand)
-
-    brand_names = [b['name'].lower() for b in BRANDS]
-    match = process.extractOne(brand_input, brand_names, scorer=fuzz.token_sort_ratio)
-    if match and match[1] >= 80:
-        matched_brand = next((b for b in BRANDS if b['name'].lower() == match[0]), None)
-        if matched_brand:
-            brand_data = matched_brand.copy()
-            ai_analysis = generate_brand_analysis(brand_data)
-            if ai_analysis:
-                brand_data['ai_explanation'] = ai_analysis
-            return jsonify(brand_data)
+            brand_data['ai_explanation'] = ai_analysis
+        return jsonify(brand_data)
 
     return jsonify({
         'name': brand_input.title(),
         'cruelty_free': None,
         'vegan': None,
-        'note': "Brand not found in our database. Try searching on Cruelty-Free Kitty or PETA directly!",
-        'source': "Not found"
+        'note': "Not in our curated database. The live Google check below is based on search results only.",
+        'source': "Live search only"
     })
 
 @app.route('/api/routine', methods=['POST'])
@@ -809,6 +798,38 @@ def api_dupes():
         import traceback
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
-    
+
+def summarize_evidence(name, web, db_payload):
+    lines = "\n".join(f"- [{r['trusted'] or 'other site'}] {r['title']}: {r['snippet']}" for r in web)
+    db_line = ""
+    if db_payload.get('cruelty_free') is not None:
+        db_line = f"Our database says: cruelty-free={db_payload['cruelty_free']}, vegan={db_payload.get('vegan')}. "
+    prompt = (f'Brand: {name}. {db_line}Using ONLY the search results below, write at most 2 short sentences: '
+            f'does an independent source (PETA, Leaping Bunny, Cruelty Free Kitty, Vegan Society) list this brand as '
+            f'cruelty-free, and does any result raise doubts (e.g. animal testing, sales in mainland China)? '
+            f'If the results do not clearly say, say that plainly. Do not invent facts.\n\nResults:\n{lines}')
+    try:
+        c = groq_client.chat.completions.create(model=GROQ_MODEL, temperature=0.0, max_tokens=200,
+                                                messages=[{"role": "user", "content": prompt}])
+        return c.choices[0].message.content.strip()
+    except Exception as e:
+        print(f"⚠️ evidence summary failed: {e}")
+        return ''
+
+@app.route('/api/check_brand', methods=['POST'])
+def check_brand():
+    result = check_brand_base()
+    if isinstance(result, tuple):          # error responses pass straight through
+        return result
+    payload = result.get_json()
+    try:
+        ev = brand_evidence(payload.get('name', ''))
+        payload['evidence'] = ev
+        if ev['web']:
+            payload['evidence_summary'] = summarize_evidence(payload['name'], ev['web'], payload)
+    except Exception as e:
+        print(f"⚠️ evidence lookup failed: {e}")
+    return jsonify(payload)
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=7860)

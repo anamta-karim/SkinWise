@@ -1,7 +1,7 @@
 """SerpApi helpers for SkinWise (hackathon build).
 
 - Every response is cached on disk (data/serpapi_cache.json), so repeated
-  searches cost 0 credits. The free plan only gives 250 searches/month.
+searches cost 0 credits. The free plan only gives 250 searches/month.
 - Uses plain `requests` against the SerpApi REST endpoint (no extra SDK needed).
 """
 import os
@@ -50,8 +50,8 @@ def serpapi_search(engine, **params):
     for attempt in range(2):                      # SerpApi occasionally times out; retry once
         try:
             r = requests.get(SERPAPI_URL,
-                             params={"engine": engine, "api_key": api_key, **params},
-                             timeout=60)
+                            params={"engine": engine, "api_key": api_key, **params},
+                            timeout=60)
             break
         except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
             if attempt == 1:
@@ -83,7 +83,7 @@ def shopping_search(query):
             "rating": item.get("rating"),
             "reviews": item.get("reviews"),
             "link": (item.get("link") or item.get("product_link")
-                     or "https://www.google.com/search?tbm=shop&q=" + quote_plus(title)),
+                    or "https://www.google.com/search?tbm=shop&q=" + quote_plus(title)),
             "thumbnail": item.get("thumbnail", ""),
         })
     return offers, cached
@@ -171,7 +171,7 @@ def search_snippets(query, num=6):
 # Read a result page for ingredient lists (plain HTTP fetch, 0 SerpApi credits)
 # ---------------------------------------------------------------------------
 _UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                     "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
+                    "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
 
 _ITEM = r"[A-Za-z0-9][A-Za-z0-9 ()/\-\.%'+&]{1,45}"
 _RUN = re.compile(r"(?:%s,\s*){5,}%s" % (_ITEM, _ITEM))
@@ -182,7 +182,7 @@ def find_comma_lists(text, max_lists=8):
     lists = []
     for m in _RUN.finditer(text[:400_000]):
         items = [re.sub(r"^.*?ingredients?\s*:?\s*", "", i.strip(), flags=re.I).strip(" .;").lower()
-                 for i in m.group(0).split(",")]
+                for i in m.group(0).split(",")]
         items = [i for i in items if i]
         if len(items) >= 6:
             lists.append(items)
@@ -264,3 +264,47 @@ def amazon_ingredient_candidates(asin, domain="amazon.in"):
     if not explicit and not candidates:
         print("   amazon response keys:", list(data.keys())[:14])
     return explicit, candidates
+
+
+# ---------------------------------------------------------------------------
+# EthiScan evidence: Google Search (certifications) + Google News (recent coverage)
+# ---------------------------------------------------------------------------
+TRUSTED_SOURCES = {
+    "peta.org": "PETA",
+    "leapingbunny.org": "Leaping Bunny",
+    "crueltyfreekitty.com": "Cruelty Free Kitty",
+    "vegansociety.com": "Vegan Society",
+}
+
+
+def brand_evidence(brand):
+    """2 credits (cached): web results about certifications + recent news about the brand."""
+    key = brand.lower().split()[0]
+
+    web, _ = search_snippets(f"{brand} cruelty free vegan certified PETA Leaping Bunny", num=8)
+    web = [r for r in web if key in f"{r['title']} {r['link']} {r['snippet']}".lower()]
+    for r in web:
+        r["trusted"] = next((label for dom, label in TRUSTED_SOURCES.items() if dom in r["link"]), None)
+    web.sort(key=lambda r: r["trusted"] is None)          # trusted sources first (stable sort)
+
+    news = []
+    try:
+        data, _ = serpapi_search("google_news", q=f"{brand} skincare animal testing OR cruelty-free", gl="in", hl="en")
+        for item in data.get("news_results", []):
+            nested = [item.get("highlight") or {}] + (item.get("stories") or [])
+            for it in [item] + nested:
+                title, link = it.get("title"), it.get("link")
+                if not title or not link or key not in title.lower():
+                    continue
+                news.append({"title": title, "link": link,
+                            "source": (it.get("source") or {}).get("name", ""),
+                            "date": (it.get("iso_date") or "")[:10]})
+    except Exception as e:
+        print(f"   ⚠️ news lookup failed: {e}")
+
+    seen, uniq = set(), []
+    for n in news:
+        if n["link"] not in seen:
+            seen.add(n["link"])
+            uniq.append(n)
+    return {"web": web[:5], "news": uniq[:4]}
