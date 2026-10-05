@@ -3,7 +3,7 @@ import os
 import json
 import time
 from ocr_utils import extract_ingredients
-from serpapi_utils import price_compare, discover_products, search_snippets, fetch_ingredient_context, find_comma_lists
+from serpapi_utils import price_compare, discover_products, search_snippets, fetch_ingredient_context, find_comma_lists, shopping_search, CATEGORY_QUERY, amazon_ingredient_candidates
 from analysis_utils import terms_only
 from analysis_utils import analyze_ingredients, calculate_safety_score
 from rapidfuzz import process, fuzz
@@ -544,6 +544,17 @@ Text:
 
 PREFERRED_SITES = ("incidecoder.com", "skincarisma.com", "minimalist.co", "nykaa.com", "purplle.com")
 SKIP_SITES = ("amazon.", "flipkart.", "youtube.", "instagram.", "facebook.", "reddit.", "pinterest.", "taobao.")
+USE_AMAZON = False   # Amazon lookups cost 1 credit each and returned nothing in tests
+
+TYPE_WORDS = {
+    "face_wash": ("wash", "cleanser"),
+    "moisturizer": ("moistur", "cream", "gel"),
+    "serum_essence": ("serum", "essence"),
+    "sunscreen": ("sunscreen", "spf"),
+    "toner_mist": ("toner", "mist"),
+    "scrub_exfoliator": ("scrub", "exfoliat", "peel"),
+    "mask_peel": ("mask", "peel"),
+}
 
 def clean_title(title):
     t = title.split('|')[0]
@@ -553,6 +564,21 @@ def clean_title(title):
     t = re.sub(r'(?i)\b(pack of \d+|\d+\s?(ml|g|gm|gms|oz))\b', ' ', t)
     t = re.sub(r'\s+', ' ', t).strip()
     return ' '.join(t.split()[:8])
+
+GENERIC_WORDS = {"serum", "toner", "cream", "face", "gel", "lotion", "moisturizer", "moisturiser",
+                "moisturising", "moisturizing", "hydrating", "wash", "cleanser", "sunscreen", "mask",
+                "essence", "skin", "with", "for", "the", "and", "spf", "acid", "free", "pack"}
+
+def title_tokens(title):
+    """Distinctive words of a product title (brand + key active)."""
+    words = re.findall(r"[a-z0-9]+", clean_title(title).lower())
+    return [w for w in words if len(w) >= 4 and w not in GENERIC_WORDS and not w.isdigit()]
+
+def is_relevant(result, tokens):
+    """Does this search result actually mention the product?"""
+    blob = f"{result['title']} {result['link']} {result['snippet']}".lower()
+    need = 1 if len(tokens) <= 1 else 2
+    return sum(1 for t in tokens if t in blob) >= need
 
 def _norm(i):
     """lowercase, drop (parentheses) and percentages like 10%"""
@@ -566,27 +592,31 @@ def looks_like_inci(items):
             if process.extractOne(_norm(it), terms_only, scorer=fuzz.ratio, score_cutoff=85))
     return hits / len(items) >= 0.35
 
-def get_product_ingredients(title):
-    """Free list-scan on snippets, then whole pages, then AI extraction as last resort."""
+def get_product_ingredients(title, retry=True):
+    """Relevant snippets first, then relevant pages, then AI extraction. Returns (ingredients, sources)."""
     short = clean_title(title)
+    tokens = title_tokens(title)
     sources = []
-    for query in (f"{short} ingredients", f"{short} incidecoder ingredients"):
+    queries = (f"{short} skincare ingredients", f"{short} incidecoder")
+    for query in queries[: 2 if retry else 1]:
         snippets, _ = search_snippets(query)
-        sources = [{'title': s['title'], 'link': s['link']} for s in snippets[:3]]
-        print(f"🔎 '{query}' -> {[s['link'][:50] for s in snippets]}")
+        relevant = [s for s in snippets if is_relevant(s, tokens)]
+        sources = [{'title': s['title'], 'link': s['link']} for s in relevant[:3]]
+        print(f"🔎 '{query}' -> {len(relevant)}/{len(snippets)} relevant: {[s['link'][:45] for s in relevant]}")
 
-        # 1) does any snippet already contain a valid-looking list?
-        for l in find_comma_lists(" | ".join(s['snippet'] for s in snippets)):
-            if looks_like_inci(l):
-                print("   ✅ valid list found in snippets")
-                return l, sources
+        # 1) a valid-looking list inside a relevant snippet
+        for s in relevant:
+            for l in find_comma_lists(s['snippet']):
+                if looks_like_inci(l):
+                    print("   ✅ valid list found in a relevant snippet")
+                    return l, [{'title': s['title'], 'link': s['link']}]
 
-        # 2) read the pages themselves
+        # 2) read relevant pages
         def rank(s):
             return 0 if any(d in s['link'] for d in PREFERRED_SITES) else 1
-        candidates = [s for s in sorted(snippets, key=rank)
+        candidates = [s for s in sorted(relevant, key=rank)
                     if s['link'] and not any(d in s['link'] for d in SKIP_SITES)]
-        for s in candidates[:4]:
+        for s in candidates[:3]:
             page = fetch_ingredient_context(s['link'])
             valid = [l for l in page['lists'] if looks_like_inci(l)]
             print(f"   page {s['link'][:50]} -> {len(page['lists'])} candidate lists, {len(valid)} valid")
@@ -596,6 +626,27 @@ def get_product_ingredients(title):
                 found = extract_ingredients_from_snippets(short, [{'title': s['title'], 'snippet': page['windows']}])
                 if len(found) >= 3:
                     return found, [{'title': s['title'], 'link': s['link']}]
+
+        # 3) an Amazon.in listing among the relevant results -> read the whole listing (1 credit)
+        for s in relevant:
+            if not USE_AMAZON or 'amazon.' not in s['link']:
+                continue
+            m = re.search(r"amazon\.in/(?:.*?/)?(?:dp|gp/product)/([A-Z0-9]{10})", s['link'])
+            if not m:
+                print(f"   amazon link without a product id: {s['link'][:90]}")
+                continue
+            try:
+                explicit, cands = amazon_ingredient_candidates(m.group(1))
+            except Exception as e:
+                print(f"   ⚠️ Amazon lookup failed: {e}")
+                break
+            valid = [l for l in cands if looks_like_inci(l)]
+            print(f"   🛒 Amazon {m.group(1)} -> explicit {len(explicit)}, {len(cands)} candidate lists, {len(valid)} valid")
+            if len(explicit) >= 3:
+                return explicit, [{'title': s['title'], 'link': s['link']}]
+            if valid:
+                return max(valid, key=len), [{'title': s['title'], 'link': s['link']}]
+            break
     return [], sources
 
 @app.route('/api/recommend_live', methods=['POST'])
@@ -639,5 +690,125 @@ def live_analyze():
         traceback.print_exc()
         return jsonify({'found': False, 'error': str(e)}), 500
 
+ACTIVE_CATEGORIES = {'beneficial', 'antioxidant', 'aha', 'bha', 'pha', 'retinoid', 'peptide', 'uv filter'}
+FILLERS = {'water', 'aqua', 'eau', 'glycerin', 'butylene glycol', 'propylene glycol', 'propanediol',
+        'pentylene glycol', 'caprylyl glycol', 'ethylhexylglycerin'}
+CORE_STOP = GENERIC_WORDS | {'extract', 'root', 'leaf', 'water', 'oil', 'flower', 'juice', 'seed', 'fruit'}
+
+def active_list(ings):
+    """Ordered, de-duplicated key actives: beneficial-type ingredients from our database, minus fillers."""
+    out = []
+    for r in analyze_ingredients(ings)['matched']:
+        name = str(r['ingredient_name']).lower().split('(')[0].strip()
+        if (str(r.get('category', '')).strip().lower() in ACTIVE_CATEGORIES
+                and name not in FILLERS and name not in out):
+            out.append(name)
+    return out
+
+def active_overlap(orig_ings, other_ings):
+    a, b = active_list(orig_ings), set(active_list(other_ings))
+    if not a:
+        return 0, []
+    shared = [x for x in a if x in b]
+    return round(len(shared) / len(a) * 100), shared
+
+def generic_query(title, product_type='', actives=()):
+    """Brand-free shopping phrase grounded in the product's real actives (no guessing)."""
+    short = clean_title(title)
+    type_hint = f' It is a {product_type}.' if product_type else ''
+    act_hint = (f' Its key active ingredients are: {", ".join(actives[:3])}. Use ONLY these actives, do not add others.'
+                if actives else ' Do not guess any active ingredients; use only the product type.')
+    try:
+        c = groq_client.chat.completions.create(
+            model=GROQ_MODEL, temperature=0.0, max_tokens=60,
+            messages=[{"role": "user", "content":
+                f'Rewrite "{short}" as a generic shopping search phrase with NO brand name, max 6 words, '
+                f'keeping the product type and the concentration if the title states it.{type_hint}{act_hint} '
+                f'Return only the phrase.'}])
+        phrase = c.choices[0].message.content.strip().strip('"')
+        if phrase:
+            return phrase
+    except Exception as e:
+        print(f"⚠️ generic_query failed: {e}")
+    return ' '.join(short.split()[1:]) or short
+
+@app.route('/api/dupes', methods=['POST'])
+def api_dupes():
+    d = request.get_json() or {}
+    title = d.get('title', '').strip()
+    price = d.get('price_value')
+    category = d.get('category', '')
+    skin_type = (d.get('skin_type') or '').lower() or None
+    if not title or not price:
+        return jsonify({'error': 'title and price required'}), 400
+    try:
+        try:
+            orig_ings, _ = get_product_ingredients(title)
+        except Exception as e:
+            print(f"⚠️ original lookup failed: {e}")
+            return jsonify({'error': 'The search service timed out. Please try again in a moment.'}), 503
+        if len(orig_ings) < 6:
+            return jsonify({'error': "Couldn't read enough of this product's ingredients to compare dupes."}), 404
+        actives = active_list(orig_ings)
+        if not actives:
+            return jsonify({'error': "This product's key actives aren't in our ingredient database, so I can't judge dupes reliably."}), 404
+
+        phrase = generic_query(title, CATEGORY_QUERY.get(category, ''), actives)
+        offers, _ = shopping_search(phrase)
+        print(f"🧬 actives {actives[:3]} -> search '{phrase}' -> {len(offers)} offers")
+
+        brand_words = [w for w in clean_title(title).lower().split() if w != 'the']
+        brand = brand_words[0] if brand_words else ''
+        core = [w for a in actives[:2] for w in a.split() if len(w) > 3 and w not in CORE_STOP][:3]
+        type_words = TYPE_WORDS.get(category, ())
+        BAD = ("hair", "shampoo", "conditioner", "body", "lip ", "foot", "hand ")
+
+        cands, seen = [], set()
+        for o in offers:
+            t = o['title'].lower()
+            if o['price_value'] is None or o['price_value'] >= float(price) * 0.9:
+                continue
+            if '₹' not in (o['price'] or ''):          # skip other currencies
+                continue
+            if (brand and brand in t) or t[:40] in seen:
+                continue
+            if core and not any(w in t for w in core):
+                continue
+            if type_words and not any(w in t for w in type_words):
+                continue
+            if any(b in t for b in BAD):
+                continue
+            seen.add(t[:40])
+            cands.append(o)
+        cands.sort(key=lambda o: (o['rating'] or 0) * ((o['reviews'] or 0) ** 0.5), reverse=True)
+
+        verified, similar = [], []
+        for i, o in enumerate(cands[:5]):
+            base = {'title': o['title'], 'merchant': o['merchant'], 'price': o['price'],
+                    'link': o['link'], 'thumbnail': o['thumbnail'],
+                    'saving': int(float(price) - o['price_value'])}
+            ings = []
+            if i < 2:                      # only spend credits reading the top 2
+                try:
+                    ings, _ = get_product_ingredients(o['title'], retry=False)
+                except Exception as e:
+                    print(f"   ⚠️ couldn't read '{o['title'][:40]}': {e}")
+            if len(ings) >= 6:
+                pct, shared = active_overlap(orig_ings, ings)
+                headline = any(w in ing for ing in ings for w in core)
+                print(f"   '{o['title'][:40]}': {pct}% active overlap {shared} (headline active: {headline})")
+                if pct >= 30 or (headline and pct >= 15):
+                    res = analyze_ingredients(ings, skin_type=skin_type)
+                    verified.append({**base, 'overlap': pct, 'shared': shared[:4],
+                                    'safety': calculate_safety_score(res), 'n_ingredients': len(ings)})
+                continue
+            similar.append(base)
+        verified.sort(key=lambda x: (x['overlap'], x['safety']), reverse=True)
+        return jsonify({'phrase': phrase, 'dupes': verified, 'similar': similar[:3]})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+    
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=7860)

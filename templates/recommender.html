@@ -359,6 +359,11 @@
                   Check ingredients for my skin
                 </button>
                 <div class="live-box" style="font-size:0.9rem;"></div>
+                <button onclick="findDupes(this)" data-title="${encodeURIComponent(p.title)}" data-price="${p.price_value}" data-category="${p.category || ''}"
+                  style="margin:6px auto; display:block; background:#7C5CBF; color:white; border:none; padding:8px 18px; border-radius:50px; font-size:0.85rem; cursor:pointer; box-shadow:none;">
+                  Find cheaper dupes
+                </button>
+                <div class="dupe-box" style="font-size:0.88rem;"></div>
                 ${p.link ? `<a href="${p.link}" target="_blank" style="display:block; text-align:center; color:var(--lav-600); text-decoration:none; font-weight:600; margin-top:12px;">View on ${p.merchant} →</a>` : ''}
               </div>
             </div>`;
@@ -384,7 +389,7 @@
         } else {
           const color = d.score >= 80 ? '#1A8C4E' : d.score >= 60 ? '#B8860B' : '#D32F2F';
           box.innerHTML = `<p style="text-align:center; font-weight:600; color:${color};">Safety score: ${d.score}/100
-              <small style="color:#888;">(${d.ingredients.length} ingredients found)</small></p>`
+              <small style="color:#888;">(${d.ingredients.length} ingredients found${d.ingredients.length < 12 ? ', list may be incomplete' : ''})</small></p>`
             + (d.flagged.length
                 ? d.flagged.map(f => `<p style="color:#D32F2F;">⚠️ ${f.ingredient} (${f.concern_level})</p>`).join('')
                 : `<p style="color:#1A8C4E; text-align:center;">No flagged ingredients for your skin.</p>`)
@@ -394,6 +399,44 @@
         box.innerHTML = `<p style="color:#888;">Something went wrong. Try again.</p>`;
       }
       btn.style.display = 'none';
+    }
+
+    async function findDupes(btn) {
+      const box = btn.nextElementSibling;
+      btn.disabled = true;
+      btn.textContent = "Hunting for dupes...";
+      try {
+        const res = await fetch('/api/dupes', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({title: decodeURIComponent(btn.dataset.title),
+                                price_value: parseFloat(btn.dataset.price), category: btn.dataset.category,
+                                skin_type: selectedSkin[0] || ""})
+        });
+        const d = await res.json();
+        const similar = d.similar || [];
+        if (d.error) {
+          box.innerHTML = `<p style="color:#888; text-align:center;">${d.error}</p>`;
+        } else if (!d.dupes.length && !similar.length) {
+          box.innerHTML = `<p style="color:#888; text-align:center;">No cheaper lookalike found for this one.</p>`;
+        } else {
+          const card = (x, verified) => `
+            <div style="border:1px solid #EDE8FF; border-radius:14px; padding:10px; margin:8px 0; background:#FDFBFF;">
+              <a href="${x.link}" target="_blank" style="color:#3D2878; text-decoration:none; font-weight:600;">${x.title.slice(0, 60)}</a>
+              <div style="color:#666;">${x.merchant} • ${x.price} <span style="color:#1A8C4E; font-weight:600;">Save ₹${x.saving}</span></div>
+              ${verified
+                ? `<div>🧬 ${x.overlap}% of key actives match${x.shared.length ? ': ' + x.shared.join(', ') : ''}</div>
+                  <div>Safety ${x.safety}/100 <small style="color:#888;">(${x.n_ingredients} ingredients read)</small></div>`
+                : `<div style="color:#B8860B; font-size:0.8rem;">⚠️ Ingredients unverified, check the label</div>`}
+            </div>`;
+          box.innerHTML = `<p style="text-align:center; color:#888; font-size:0.8rem;">Searched: "${d.phrase}"</p>`
+            + (d.dupes.length ? `<p style="font-weight:600; color:#1A8C4E; margin:8px 0 0;">✅ Verified dupes</p>` + d.dupes.map(x => card(x, true)).join('') : '')
+            + (similar.length ? `<p style="font-weight:600; color:#7C5CBF; margin:8px 0 0;">Similar &amp; cheaper</p>` + similar.map(x => card(x, false)).join('') : '');
+        }
+      } catch (e) {
+        box.innerHTML = `<p style="color:#888;">Something went wrong. Try again.</p>`;
+      }
+      btn.textContent = "Find cheaper dupes";
+      btn.disabled = false;
     }
 
     async function comparePrices(btn) {

@@ -6,11 +6,13 @@
 """
 import os
 import re
+import time
 import json
 import math
 import html as htmllib
 import threading
 import requests
+from urllib.parse import quote_plus
 from rapidfuzz import fuzz
 
 SERPAPI_URL = "https://serpapi.com/search.json"
@@ -45,9 +47,16 @@ def serpapi_search(engine, **params):
         if cache_key in _cache:
             return _cache[cache_key], True
 
-    r = requests.get(SERPAPI_URL,
-                     params={"engine": engine, "api_key": api_key, **params},
-                     timeout=30)
+    for attempt in range(2):                      # SerpApi occasionally times out; retry once
+        try:
+            r = requests.get(SERPAPI_URL,
+                             params={"engine": engine, "api_key": api_key, **params},
+                             timeout=60)
+            break
+        except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
+            if attempt == 1:
+                raise
+            time.sleep(2)
     r.raise_for_status()
     data = r.json()
     if data.get("error"):
@@ -65,6 +74,7 @@ def shopping_search(query):
     data, cached = serpapi_search("google_shopping", q=query, gl="in", hl="en")
     offers = []
     for item in data.get("shopping_results", []):
+        title = item.get("title", "")
         offers.append({
             "title": item.get("title", ""),
             "merchant": item.get("source", ""),
@@ -72,7 +82,8 @@ def shopping_search(query):
             "price_value": item.get("extracted_price"),
             "rating": item.get("rating"),
             "reviews": item.get("reviews"),
-            "link": item.get("link") or item.get("product_link", ""),
+            "link": (item.get("link") or item.get("product_link")
+                     or "https://www.google.com/search?tbm=shop&q=" + quote_plus(title)),
             "thumbnail": item.get("thumbnail", ""),
         })
     return offers, cached
@@ -125,6 +136,8 @@ def discover_products(category, skin_type, concerns, limit=5):
     for o in offers:
         key = o["title"].lower()[:40]
         if not o["title"] or o["price_value"] is None or key in seen:
+            continue
+        if "₹" not in (o["price"] or ""):          # skip listings priced in other currencies
             continue
         seen.add(key)
         rating = o["rating"] or 0
@@ -212,3 +225,42 @@ def fetch_ingredient_context(url, window=900, max_hits=3):
         _cache[key] = out
         _save_cache()
     return out
+
+
+# ---------------------------------------------------------------------------
+# Amazon Product API - structured ingredient list for an ASIN (1 credit)
+# ---------------------------------------------------------------------------
+def amazon_item_ingredients(asin, domain="amazon.in"):
+    """Returns a cleaned list of ingredients from the Amazon listing's Item Ingredients section."""
+    data, _ = serpapi_search("amazon_product", asin=asin, amazon_domain=domain)
+    raw = ", ".join(str(i) for i in (data.get("item_ingredients") or []))
+    raw = re.sub(r"(?i)^\s*ingredients?\s*:?", "", raw)
+    items = [re.sub(r"\s+", " ", x).strip(" .;").lower() for x in raw.split(",")]
+    return [i for i in items if i]
+
+
+def _all_strings(obj):
+    """Yield every text value inside a nested JSON response."""
+    if isinstance(obj, str):
+        yield obj
+    elif isinstance(obj, dict):
+        for v in obj.values():
+            yield from _all_strings(v)
+    elif isinstance(obj, list):
+        for v in obj:
+            yield from _all_strings(v)
+
+
+def amazon_ingredient_candidates(asin, domain="amazon.in"):
+    """1 credit (cached). Returns (explicit_item_ingredients, candidate_lists_found_anywhere_in_the_listing)."""
+    data, _ = serpapi_search("amazon_product", asin=asin, amazon_domain=domain)
+    raw = ", ".join(str(i) for i in (data.get("item_ingredients") or []))
+    raw = re.sub(r"(?i)^\s*ingredients?\s*:?", "", raw)
+    explicit = [re.sub(r"\s+", " ", x).strip(" .;").lower() for x in raw.split(",")]
+    explicit = [i for i in explicit if i]
+
+    text = " | ".join(_all_strings(data))          # scan every text field of the listing
+    candidates = find_comma_lists(text)
+    if not explicit and not candidates:
+        print("   amazon response keys:", list(data.keys())[:14])
+    return explicit, candidates
