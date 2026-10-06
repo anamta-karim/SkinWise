@@ -340,6 +340,15 @@
       btn.disabled = true;
     });
 
+    function confidenceNote(data) {
+      const n = (data.ingredients || []).length;
+      if (data.confidence === 'low')
+        return `<br><span style="color:#B8860B; font-size:0.85rem;">⚠️ Only ${n} ingredients found online. This is a best-case score: ingredients we couldn't read could lower it. Check the label.</span>`;
+      if (data.confidence === 'partial')
+        return `<br><span style="color:#B8860B; font-size:0.85rem;">⚠️ Based on ${n} ingredients found online, so the list may be incomplete. Unread ingredients could lower this score.</span>`;
+      return '';
+    }
+
     function renderResults(data) {
       console.log("🚀 renderResults started", data);
       const section = document.getElementById('resultSection');
@@ -353,7 +362,7 @@
 
         <!-- NEW: Analyzed count + AI badge -->
         <p style="text-align:center; color:var(--muted); font-size:0.95rem; margin-bottom:1.5rem;">
-          Analyzed ${data.ingredients.length} ingredients • ✨ AI-enhanced
+          Analyzed ${data.ingredients.length} ingredients • ✨ AI-enhanced${confidenceNote(data)}
         </p>
       `;
 

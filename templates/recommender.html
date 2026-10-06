@@ -438,20 +438,22 @@
       btn.textContent = "Searching for ingredients...";
       try {
         const res = await fetch('/api/live_analyze', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title: decodeURIComponent(btn.dataset.title), skin_type: selectedSkin[0] || "" })
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({title: decodeURIComponent(btn.dataset.title), skin_type: selectedSkin[0] || ""})
         });
         const d = await res.json();
         const src = (d.sources || []).slice(0, 2).map(s => `<a href="${s.link}" target="_blank" style="color:#7C5CBF;">${s.title.slice(0, 40)}…</a>`).join('<br>');
         if (!d.found) {
           box.innerHTML = `<p style="color:#888; text-align:center;">Couldn't find a reliable ingredient list online.</p>`;
         } else {
+          const incomplete = d.confidence === 'partial' || d.confidence === 'low';
           const color = d.score >= 80 ? '#1A8C4E' : d.score >= 60 ? '#B8860B' : '#D32F2F';
-          box.innerHTML = `<p style="text-align:center; font-weight:600; color:${color};">Safety score: ${d.score}/100
-              <small style="color:#888;">(${d.ingredients.length} ingredients found${d.ingredients.length < 12 ? ', list may be incomplete' : ''})</small></p>`
+          box.innerHTML = `<p style="text-align:center; font-weight:600; color:${color};">Safety score: ${incomplete ? 'up to ' : ''}${d.score}/100
+              <small style="color:#888;">(${d.ingredients.length} ingredients found)</small></p>`
+            + (incomplete ? `<p style="color:#B8860B; font-size:0.8rem; text-align:center;">⚠️ ${d.confidence === 'low' ? 'Only a few ingredients were found.' : 'The list may be incomplete.'} Unread ingredients could lower this score. Check the label.</p>` : '')
             + (d.flagged.length
-              ? d.flagged.map(f => `<p style="color:#D32F2F;">⚠️ ${f.ingredient} (${f.concern_level})</p>`).join('')
-              : `<p style="color:#1A8C4E; text-align:center;">No flagged ingredients for your skin.</p>`)
+                ? d.flagged.map(f => `<p style="color:#D32F2F;">⚠️ ${f.ingredient} (${f.concern_level})</p>`).join('')
+                : `<p style="color:#1A8C4E; text-align:center;">No flagged ingredients for your skin.</p>`)
             + `<p style="font-size:0.8rem;">Sources:<br>${src}</p>`;
         }
       } catch (e) {
@@ -486,7 +488,7 @@
               <div style="color:#666;">${x.merchant} • ${x.price} <span style="color:#1A8C4E; font-weight:600;">Save ₹${x.saving}</span></div>
               ${verified
               ? `<div>🧬 ${x.overlap}% of key actives match${x.shared.length ? ': ' + x.shared.join(', ') : ''}</div>
-                  <div>Safety ${x.safety}/100 <small style="color:#888;">(${x.n_ingredients} ingredients read)</small></div>`
+                  <div>Safety ${x.confidence !== 'good' ? 'up to ' : ''}${x.safety}/100 <small style="color:#888;">(${x.n_ingredients} ingredients read${x.confidence !== 'good' ? ', may be incomplete' : ''})</small></div>`
               : `<div style="color:#B8860B; font-size:0.8rem;">⚠️ Ingredients unverified, check the label</div>`}
             </div>`;
           box.innerHTML = `<p style="text-align:center; color:#888; font-size:0.8rem;">Searched: "${d.phrase}"</p>`

@@ -19,11 +19,20 @@ groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
 print("Groq model:", GROQ_MODEL)
 _orig_create = groq_client.chat.completions.create
+
 def _create(*args, **kwargs):
     kwargs["model"] = GROQ_MODEL
     kwargs["max_tokens"] = kwargs.get("max_tokens", 300) + 700
     kwargs.setdefault("extra_body", {"reasoning_effort": "low"})
-    return _orig_create(*args, **kwargs)
+    r = _orig_create(*args, **kwargs)
+    try:                                   # strip markdown the page can't render
+        for ch in r.choices:
+            if ch.message and ch.message.content:
+                ch.message.content = ch.message.content.replace("**", "").replace("__", "")
+    except Exception:
+        pass
+    return r
+
 groq_client.chat.completions.create = _create
 
 app = Flask(__name__)
@@ -370,7 +379,8 @@ def analyze():
             'safe_count': results.get('safe_count', 0),
             'caution_count': results.get('caution_count', 0),
             'avoid_count': results.get('avoid_count', 0),
-            'sources': sources
+            'sources': sources,
+            'confidence': list_confidence(len(ingredients), bool(sources))
         })
     except Exception as e:
         import traceback
@@ -545,6 +555,16 @@ TYPE_WORDS = {
     "mask_peel": ("mask", "peel"),
 }
 
+def list_confidence(n, from_web):
+    """How much to trust a score. Labels/pasted lists are complete; web-found lists may be partial."""
+    if not from_web:
+        return 'complete'
+    if n >= 15:
+        return 'good'
+    if n >= 8:
+        return 'partial'
+    return 'low'
+
 def clean_title(title):
     t = title.split('|')[0]
     t = re.sub(r'\(.*?\)', ' ', t)
@@ -581,6 +601,16 @@ def looks_like_inci(items):
             if process.extractOne(_norm(it), terms_only, scorer=fuzz.ratio, score_cutoff=85))
     return hits / len(items) >= 0.35
 
+VARIANT_WORDS = {"psoriasis", "eczema", "baume", "facial", "night", "pm", "intensive", "renewing",
+                "smoothing", "acne", "sensitive", "kids", "baby", "travel", "mini", "sample",
+                "refill", "set", "kit", "duo", "combo", "pack"}
+
+def variant_conflict(result, query_title):
+    """True if the page is about a variant (e.g. 'psoriasis') that the user didn't ask for."""
+    q = set(re.findall(r"[a-z]+", query_title.lower()))
+    blob = set(re.findall(r"[a-z]+", f"{result['title']} {result['link']}".lower()))
+    return bool((blob & VARIANT_WORDS) - q)
+
 def get_product_ingredients(title, retry=True):
     """Relevant snippets first, then relevant pages, then AI extraction. Returns (ingredients, sources)."""
     short = clean_title(title)
@@ -589,7 +619,7 @@ def get_product_ingredients(title, retry=True):
     queries = (f"{short} skincare ingredients", f"{short} incidecoder")
     for query in queries[: 2 if retry else 1]:
         snippets, _ = search_snippets(query)
-        relevant = [s for s in snippets if is_relevant(s, tokens)]
+        relevant = [s for s in snippets if is_relevant(s, tokens) and not variant_conflict(s, short)]
         sources = [{'title': s['title'], 'link': s['link']} for s in relevant[:3]]
         print(f"🔎 '{query}' -> {len(relevant)}/{len(snippets)} relevant: {[s['link'][:45] for s in relevant]}")
 
@@ -669,6 +699,7 @@ def live_analyze():
             'found': True,
             'ingredients': ingredients,
             'score': calculate_safety_score(results),
+            'confidence': list_confidence(len(ingredients), True),
             'flagged': [{'ingredient': r.get('ingredient_name', ''),
                         'concern_level': r.get('concern_level', ''),
                         'explanation': r.get('explanation', '')} for r in results['flagged']],
