@@ -50,7 +50,7 @@ def serpapi_search(engine, **params):
     for attempt in range(2):                      # SerpApi occasionally times out; retry once
         try:
             r = requests.get(SERPAPI_URL,
-                            params={"engine": engine, "api_key": api_key, **params},
+                             params={"engine": engine, "api_key": api_key, **params},
                             timeout=60)
             break
         except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
@@ -282,7 +282,8 @@ def brand_evidence(brand):
     key = brand.lower().split()[0]
 
     web, _ = search_snippets(f"{brand} cruelty free vegan certified PETA Leaping Bunny", num=8)
-    web = [r for r in web if key in f"{r['title']} {r['link']} {r['snippet']}".lower()]
+    web = [r for r in web
+        if key in f"{r['title']} {r['link']}".lower() or r["snippet"].lower().count(key) >= 2]
     for r in web:
         r["trusted"] = next((label for dom, label in TRUSTED_SOURCES.items() if dom in r["link"]), None)
     web.sort(key=lambda r: r["trusted"] is None)          # trusted sources first (stable sort)
@@ -308,3 +309,67 @@ def brand_evidence(brand):
             seen.add(n["link"])
             uniq.append(n)
     return {"web": web[:5], "news": uniq[:4]}
+
+
+# ---------------------------------------------------------------------------
+# Ingredient Pulse: Google Trends (India) + related queries + Google Shopping
+# ---------------------------------------------------------------------------
+def _trends(q, data_type):
+    data, _ = serpapi_search("google_trends", q=q, geo="IN", date="today 12-m",
+                            data_type=data_type, hl="en", tz="-330")
+    return data
+
+
+def trend_products(ingredient, limit=3):
+    """Top-rated live products for an ingredient (INR listings only)."""
+    offers, _ = shopping_search(f"{ingredient} serum")
+    good = [o for o in offers if o["price_value"] is not None and "\u20b9" in (o["price"] or "")
+            and o["price_value"] <= 2500]
+    good.sort(key=lambda o: (o["rating"] or 0) * ((o["reviews"] or 0) ** 0.5), reverse=True)
+    return good[:limit]
+
+
+def ingredient_pulse(ingredients):
+    """3 credits (cached): interest over time for up to 5 ingredients in India, momentum,
+    rising searches and live products for the fastest-rising one."""
+    n_ing = len(ingredients)
+    data = _trends(",".join(ingredients), "TIMESERIES")
+    timeline = (data.get("interest_over_time") or {}).get("timeline_data", [])
+
+    series = []
+    for pt in timeline:
+        row = [0] * n_ing
+        for k, v in enumerate(pt.get("values", [])):
+            idx = v.get("query_index", k)
+            if 0 <= idx < n_ing:
+                row[idx] = v.get("extracted_value", 0) or 0
+        series.append({"date": pt.get("date", ""), "values": row})
+    if not series:
+        raise RuntimeError("Google Trends returned no data for these ingredients")
+
+    stats = []
+    k = max(1, len(series) // 6)                      # compare first vs last ~2 months
+    for idx, name in enumerate(ingredients):
+        col = [p["values"][idx] for p in series]
+        first, last = sum(col[:k]) / k, sum(col[-k:]) / k
+        stats.append({"name": name,
+                    "avg": round(sum(col) / len(col)),
+                    "momentum": round((last - first) / first * 100) if first > 0 else None})
+
+    movers = [s for s in stats if s["momentum"] is not None]
+    focus = max(movers, key=lambda s: s["momentum"])["name"] if movers else max(stats, key=lambda s: s["avg"])["name"]
+
+    rising, top, products = [], [], []
+    try:
+        rq = (_trends(focus, "RELATED_QUERIES").get("related_queries") or {})
+        rising = [{"query": r.get("query", ""), "value": r.get("value", "")} for r in rq.get("rising", [])[:6]]
+        top = [{"query": r.get("query", ""), "value": r.get("value", "")} for r in rq.get("top", [])[:6]]
+    except Exception as e:
+        print(f"   \u26a0\ufe0f related queries failed: {e}")
+    try:
+        products = trend_products(focus)
+    except Exception as e:
+        print(f"   \u26a0\ufe0f trend products failed: {e}")
+
+    return {"ingredients": ingredients, "series": series, "stats": stats,
+            "focus": focus, "rising": rising, "top": top, "products": products}

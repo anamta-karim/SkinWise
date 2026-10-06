@@ -3,7 +3,7 @@ import os
 import json
 import time
 from ocr_utils import extract_ingredients
-from serpapi_utils import price_compare, discover_products, search_snippets, fetch_ingredient_context, find_comma_lists, shopping_search, CATEGORY_QUERY, amazon_ingredient_candidates, brand_evidence
+from serpapi_utils import price_compare, discover_products, search_snippets, fetch_ingredient_context, find_comma_lists, shopping_search, CATEGORY_QUERY, amazon_ingredient_candidates, brand_evidence, ingredient_pulse
 from analysis_utils import terms_only
 from analysis_utils import analyze_ingredients, calculate_safety_score
 from rapidfuzz import process, fuzz
@@ -831,5 +831,22 @@ def check_brand():
         print(f"⚠️ evidence lookup failed: {e}")
     return jsonify(payload)
 
+@app.route('/trends')
+def trends_page():
+    return render_template('trends.html')
+
+@app.route('/api/trends', methods=['POST'])
+def api_trends():
+    d = request.get_json() or {}
+    ings = [str(i).strip().lower() for i in d.get('ingredients', []) if str(i).strip()][:5]
+    if len(ings) < 2:
+        return jsonify({'error': 'Pick at least 2 ingredients to compare.'}), 400
+    try:
+        return jsonify(ingredient_pulse(ings))
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f"Couldn't load Google Trends right now: {e}"}), 500
+    
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=7860)

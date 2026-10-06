@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Recommender • SkinWise</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
   <style>
     :root {
       --lav-50: #F5F0FF;
@@ -17,7 +20,13 @@
       --cream: #FDFBFF;
       --muted: #8B7AAF;
     }
-    * { margin:0; padding:0; box-sizing:border-box; }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
       background: var(--cream);
@@ -26,6 +35,7 @@
       position: relative;
       overflow-x: hidden;
     }
+
     .blob {
       position: absolute;
       background: radial-gradient(circle at 40% 40%, #D8CCFF 0%, #EDE8FF 40%, transparent 70%);
@@ -33,11 +43,41 @@
       z-index: -1;
       animation: float 25s ease-in-out infinite;
     }
-    .blob1 { width: 500px; height: 500px; top: -120px; right: -80px; }
-    .blob2 { width: 420px; height: 420px; bottom: -100px; left: -60px; animation-delay: 8s; }
-    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
 
-    .container { max-width: 1100px; margin: 0 auto; padding: 2rem; position: relative; z-index: 2; }
+    .blob1 {
+      width: 500px;
+      height: 500px;
+      top: -120px;
+      right: -80px;
+    }
+
+    .blob2 {
+      width: 420px;
+      height: 420px;
+      bottom: -100px;
+      left: -60px;
+      animation-delay: 8s;
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-20px);
+      }
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem;
+      position: relative;
+      z-index: 2;
+    }
 
     h1 {
       font-family: 'Cormorant Garamond', serif;
@@ -48,18 +88,18 @@
     }
 
     .card {
-      background: rgba(255,255,255,0.75);
+      background: rgba(255, 255, 255, 0.75);
       backdrop-filter: blur(16px);
-      border: 1px solid rgba(167,139,222,0.25);
+      border: 1px solid rgba(167, 139, 222, 0.25);
       border-radius: 28px;
-      box-shadow: 0 8px 32px rgba(124,92,191,0.08);
+      box-shadow: 0 8px 32px rgba(124, 92, 191, 0.08);
       padding: 2.5rem;
       margin-bottom: 2rem;
     }
 
     .pill {
       padding: 10px 22px;
-      background: rgba(255,255,255,0.8);
+      background: rgba(255, 255, 255, 0.8);
       border: 2px solid var(--lav-200);
       border-radius: 50px;
       font-size: 1rem;
@@ -69,24 +109,25 @@
       display: inline-flex;
       align-items: center;
       white-space: nowrap;
-      box-shadow: 0 2px 6px rgba(124,92,191,0.08);
+      box-shadow: 0 2px 6px rgba(124, 92, 191, 0.08);
     }
 
     .pill.active {
       background: var(--lav-600);
       color: white;
       border-color: var(--lav-800);
-      box-shadow: 0 4px 12px rgba(124,92,191,0.25);
+      box-shadow: 0 4px 12px rgba(124, 92, 191, 0.25);
     }
 
     .pill:hover {
       background: var(--lav-100);
       border-color: var(--lav-400);
       transform: translateY(-2px);
-      box-shadow: 0 6px 14px rgba(124,92,191,0.15);
+      box-shadow: 0 6px 14px rgba(124, 92, 191, 0.15);
     }
 
-    #skinTypesContainer, #concernsContainer {
+    #skinTypesContainer,
+    #concernsContainer {
       display: flex;
       flex-wrap: wrap;
       gap: 12px 10px;
@@ -105,62 +146,78 @@
       background: linear-gradient(90deg, var(--lav-600), var(--lav-400));
       color: white;
       border: none;
-      box-shadow: 0 12px 30px rgba(124,92,191,0.4);
+      box-shadow: 0 12px 30px rgba(124, 92, 191, 0.4);
       cursor: pointer;
     }
-    button:hover { transform: translateY(-4px); }
+
+    button:hover {
+      transform: translateY(-4px);
+    }
 
     .rec-card {
-      background: rgba(255,255,255,0.75);
+      background: rgba(255, 255, 255, 0.75);
       border-radius: 24px;
       padding: 1rem;
       width: 260px;
-      box-shadow: 0 8px 25px rgba(124,92,191,0.1);
+      box-shadow: 0 8px 25px rgba(124, 92, 191, 0.1);
     }
   </style>
 </head>
-<body>
-    <nav style="position: fixed; top: 0; left: 0; right: 0; background: rgba(253,251,255,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(167,139,222,0.15); padding: 1.3rem 3rem; display: flex; align-items: center; justify-content: space-between; z-index: 100;">
-      <div class="logo" style="font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 600; color: var(--lav-800); letter-spacing: -0.5px;">
-        Skin<span style="color: var(--lav-400);">Wise</span>
-      </div>
-      <div style="display: flex; gap: 2rem; font-weight: 500;">
-        <a href="/" style="text-decoration: none; color: var(--muted);">Home</a>
-        <a href="/analyzer" style="text-decoration: none; color: var(--muted);">Analyzer</a>
-        <a href="/recommender" style="text-decoration: none; color: var(--muted);">Regimen</a>
-        <a href="/ethiscan" style="text-decoration: none; color: var(--muted);">EthiScan</a>
-      </div>
-    </nav>
 
-<div style="height: 70px;"></div>
+<body>
+  <nav
+    style="position: fixed; top: 0; left: 0; right: 0; background: rgba(253,251,255,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(167,139,222,0.15); padding: 1.3rem 3rem; display: flex; align-items: center; justify-content: space-between; z-index: 100;">
+    <div class="logo"
+      style="font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 600; color: var(--lav-800); letter-spacing: -0.5px;">
+      Skin<span style="color: var(--lav-400);">Wise</span>
+    </div>
+    <div style="display: flex; gap: 2rem; font-weight: 500;">
+      <a href="/" style="text-decoration: none; color: var(--muted);">Home</a>
+      <a href="/analyzer" style="text-decoration: none; color: var(--muted);">Analyzer</a>
+      <a href="/recommender" style="text-decoration: none; color: var(--muted);">Regimen</a>
+      <a href="/ethiscan" style="text-decoration: none; color: var(--muted);">EthiScan</a>
+      <a href="/trends" style="text-decoration: none; color: var(--muted);">Trends</a>
+    </div>
+  </nav>
+
+  <div style="height: 70px;"></div>
 
   <div class="blob blob1"></div>
   <div class="blob blob2"></div>
 
   <div class="container">
     <h1>Your Personal Regimen</h1>
-    <p style="text-align:center; color:var(--muted); font-size:1.3rem; margin-bottom:2rem;">Tell us your skin type & concerns • We'll build your complete regimen</p>
+    <p style="text-align:center; color:var(--muted); font-size:1.3rem; margin-bottom:2rem;">Tell us your skin type &
+      concerns • We'll build your complete regimen</p>
 
-<div style="text-align:center; margin-bottom:1.5rem;">
-  <span style="background:linear-gradient(90deg, #7C5CBF, #A78BDE); color:white; padding:6px 16px; border-radius:50px; font-size:0.85rem; font-weight:600; display:inline-flex; align-items:center; gap:6px;">✨ Powered by Groq AI</span>
-</div>
+    <div style="text-align:center; margin-bottom:1.5rem;">
+      <span
+        style="background:linear-gradient(90deg, #7C5CBF, #A78BDE); color:white; padding:6px 16px; border-radius:50px; font-size:0.85rem; font-weight:600; display:inline-flex; align-items:center; gap:6px;">✨
+        Powered by Groq AI</span>
+    </div>
 
     <div class="card">
-      <label style="font-weight:500; display:block; margin-bottom:1rem; text-align:center;">Your skin type(s) — choose all that apply</label>
+      <label style="font-weight:500; display:block; margin-bottom:1rem; text-align:center;">Your skin type(s) — choose
+        all that apply</label>
       <div class="skin-types" id="skinTypesContainer"></div>
 
       <div style="margin-top:2.5rem;">
-        <label style="font-weight:500; display:block; margin-bottom:1rem; text-align:center;">Your main concerns (optional)</label>
+        <label style="font-weight:500; display:block; margin-bottom:1rem; text-align:center;">Your main concerns
+          (optional)</label>
         <div class="concerns" id="concernsContainer"></div>
       </div>
 
       <div style="margin-top:2.5rem;">
-        <label style="font-weight:500; display:block; margin-bottom:1rem; text-align:center;">Product types to search live (pick 1-2)</label>
-        <div id="categoriesContainer" style="display:flex; flex-wrap:wrap; gap:12px 10px; justify-content:center;"></div>
+        <label style="font-weight:500; display:block; margin-bottom:1rem; text-align:center;">Product types to search
+          live (pick 1-2)</label>
+        <div id="categoriesContainer" style="display:flex; flex-wrap:wrap; gap:12px 10px; justify-content:center;">
+        </div>
       </div>
 
       <button id="recommendBtn">Get My Recommendations</button>
-      <button id="routineBtn" style="margin-top:1rem; background:linear-gradient(90deg, #7C5CBF, #A78BDE); color:white;">Build My Daily Routine</button>
+      <button id="routineBtn"
+        style="margin-top:1rem; background:linear-gradient(90deg, #7C5CBF, #A78BDE); color:white;">Build My Daily
+        Routine</button>
     </div>
 
     <div id="resultSection" class="card" style="display:none;"></div>
@@ -176,12 +233,12 @@
     function createPills(containerId, items, selectedArray) {
       const container = document.getElementById(containerId);
       container.innerHTML = '';
-      
+
       items.forEach(item => {
         const pill = document.createElement('div');
         pill.className = 'pill';
         pill.textContent = item.charAt(0).toUpperCase() + item.slice(1);
-        
+
         pill.addEventListener('click', () => {
           if (selectedArray.includes(item)) {
             selectedArray.splice(selectedArray.indexOf(item), 1);
@@ -191,7 +248,7 @@
             pill.classList.add('active');
           }
         });
-        
+
         container.appendChild(pill);
       });
     }
@@ -206,10 +263,10 @@
         if (!recs[category] || recs[category].length === 0) return;
         html += `<h3 style="margin:2.5rem 0 1.5rem; text-align:center; color:var(--lav-800); font-size:1.35rem;">${category.replace('_', ' ').toUpperCase()}</h3>`;
         html += `<div style="display:flex; gap:1.5rem; flex-wrap:wrap; justify-content:center; margin-bottom:3rem;">`;
-        
+
         recs[category].forEach((product, index) => {
           const hasExplanation = product.ai_explanation;
-          const isTop = index === 0; 
+          const isTop = index === 0;
 
           html += `
             <div class="rec-card" style="width:280px; transition:all 0.3s; ${isTop ? 'border:2px solid #7C5CBF;' : ''}">
@@ -272,7 +329,7 @@
 
       const res = await fetch('/api/routine', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           skin_type: selectedSkin[0] || "sensitive",
           concerns: selectedConcerns
@@ -300,8 +357,10 @@
     });
 
     // ===================== SERPAPI-POWERED SECTION =====================
-    const categoryLabels = {face_wash:"Face wash", moisturizer:"Moisturizer", serum_essence:"Serum",
-      sunscreen:"Sunscreen", toner_mist:"Toner", scrub_exfoliator:"Exfoliator", mask_peel:"Mask"};
+    const categoryLabels = {
+      face_wash: "Face wash", moisturizer: "Moisturizer", serum_essence: "Serum",
+      sunscreen: "Sunscreen", toner_mist: "Toner", scrub_exfoliator: "Exfoliator", mask_peel: "Mask"
+    };
     let selectedCats = [];
 
     (function createCategoryPills() {
@@ -322,13 +381,13 @@
       const btn = document.getElementById('recommendBtn');
       btn.textContent = "Searching live products...";
       btn.disabled = true;
-      const body = JSON.stringify({skin_type: selectedSkin[0] || "sensitive", concerns: selectedConcerns, categories: selectedCats});
-      const headers = {'Content-Type': 'application/json'};
+      const body = JSON.stringify({ skin_type: selectedSkin[0] || "sensitive", concerns: selectedConcerns, categories: selectedCats });
+      const headers = { 'Content-Type': 'application/json' };
       let recs = {}, live = true;
-      try { recs = await (await fetch('/api/recommend_live', {method:'POST', headers, body})).json(); } catch (e) {}
+      try { recs = await (await fetch('/api/recommend_live', { method: 'POST', headers, body })).json(); } catch (e) { }
       if (!Object.values(recs).some(a => Array.isArray(a) && a.length)) {
         live = false;
-        recs = await (await fetch('/api/recommend', {method:'POST', headers, body})).json();
+        recs = await (await fetch('/api/recommend', { method: 'POST', headers, body })).json();
       }
       live ? renderLiveRecommendations(recs) : renderLocalRecommendations(recs);
       btn.textContent = "Get My Recommendations ✨";
@@ -379,8 +438,8 @@
       btn.textContent = "Searching for ingredients...";
       try {
         const res = await fetch('/api/live_analyze', {
-          method: 'POST', headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({title: decodeURIComponent(btn.dataset.title), skin_type: selectedSkin[0] || ""})
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: decodeURIComponent(btn.dataset.title), skin_type: selectedSkin[0] || "" })
         });
         const d = await res.json();
         const src = (d.sources || []).slice(0, 2).map(s => `<a href="${s.link}" target="_blank" style="color:#7C5CBF;">${s.title.slice(0, 40)}…</a>`).join('<br>');
@@ -391,8 +450,8 @@
           box.innerHTML = `<p style="text-align:center; font-weight:600; color:${color};">Safety score: ${d.score}/100
               <small style="color:#888;">(${d.ingredients.length} ingredients found${d.ingredients.length < 12 ? ', list may be incomplete' : ''})</small></p>`
             + (d.flagged.length
-                ? d.flagged.map(f => `<p style="color:#D32F2F;">⚠️ ${f.ingredient} (${f.concern_level})</p>`).join('')
-                : `<p style="color:#1A8C4E; text-align:center;">No flagged ingredients for your skin.</p>`)
+              ? d.flagged.map(f => `<p style="color:#D32F2F;">⚠️ ${f.ingredient} (${f.concern_level})</p>`).join('')
+              : `<p style="color:#1A8C4E; text-align:center;">No flagged ingredients for your skin.</p>`)
             + `<p style="font-size:0.8rem;">Sources:<br>${src}</p>`;
         }
       } catch (e) {
@@ -407,10 +466,12 @@
       btn.textContent = "Hunting for dupes...";
       try {
         const res = await fetch('/api/dupes', {
-          method: 'POST', headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({title: decodeURIComponent(btn.dataset.title),
-                                price_value: parseFloat(btn.dataset.price), category: btn.dataset.category,
-                                skin_type: selectedSkin[0] || ""})
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: decodeURIComponent(btn.dataset.title),
+            price_value: parseFloat(btn.dataset.price), category: btn.dataset.category,
+            skin_type: selectedSkin[0] || ""
+          })
         });
         const d = await res.json();
         const similar = d.similar || [];
@@ -424,9 +485,9 @@
               <a href="${x.link}" target="_blank" style="color:#3D2878; text-decoration:none; font-weight:600;">${x.title.slice(0, 60)}</a>
               <div style="color:#666;">${x.merchant} • ${x.price} <span style="color:#1A8C4E; font-weight:600;">Save ₹${x.saving}</span></div>
               ${verified
-                ? `<div>🧬 ${x.overlap}% of key actives match${x.shared.length ? ': ' + x.shared.join(', ') : ''}</div>
+              ? `<div>🧬 ${x.overlap}% of key actives match${x.shared.length ? ': ' + x.shared.join(', ') : ''}</div>
                   <div>Safety ${x.safety}/100 <small style="color:#888;">(${x.n_ingredients} ingredients read)</small></div>`
-                : `<div style="color:#B8860B; font-size:0.8rem;">⚠️ Ingredients unverified, check the label</div>`}
+              : `<div style="color:#B8860B; font-size:0.8rem;">⚠️ Ingredients unverified, check the label</div>`}
             </div>`;
           box.innerHTML = `<p style="text-align:center; color:#888; font-size:0.8rem;">Searched: "${d.phrase}"</p>`
             + (d.dupes.length ? `<p style="font-weight:600; color:#1A8C4E; margin:8px 0 0;">✅ Verified dupes</p>` + d.dupes.map(x => card(x, true)).join('') : '')
@@ -445,8 +506,8 @@
       btn.textContent = "Searching live prices...";
       try {
         const res = await fetch('/api/prices', {
-          method: 'POST', headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({brand: btn.dataset.brand, name: btn.dataset.name})
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ brand: btn.dataset.brand, name: btn.dataset.name })
         });
         const d = await res.json();
         if (d.error || !d.offers.length) {
@@ -466,4 +527,5 @@
     }
   </script>
 </body>
+
 </html>
