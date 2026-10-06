@@ -601,9 +601,8 @@ def looks_like_inci(items):
             if process.extractOne(_norm(it), terms_only, scorer=fuzz.ratio, score_cutoff=85))
     return hits / len(items) >= 0.35
 
-VARIANT_WORDS = {"psoriasis", "eczema", "baume", "facial", "night", "pm", "intensive", "renewing",
-                "smoothing", "acne", "sensitive", "kids", "baby", "travel", "mini", "sample",
-                "refill", "set", "kit", "duo", "combo", "pack"}
+VARIANT_WORDS = {"psoriasis", "eczema", "baume", "intensive", "renewing", "kids", "baby",
+                "travel", "mini", "sample", "refill", "kit", "combo", "pm", "lotion", "gel"}
 
 def variant_conflict(result, query_title):
     """True if the page is about a variant (e.g. 'psoriasis') that the user didn't ask for."""
@@ -620,6 +619,10 @@ def get_product_ingredients(title, retry=True):
     for query in queries[: 2 if retry else 1]:
         snippets, _ = search_snippets(query)
         relevant = [s for s in snippets if is_relevant(s, tokens) and not variant_conflict(s, short)]
+        dropped = [s['link'][:60] for s in snippets
+                if is_relevant(s, tokens) and variant_conflict(s, short)]
+        if dropped:
+            print(f"   skipped as other variants: {dropped}")
         sources = [{'title': s['title'], 'link': s['link']} for s in relevant[:3]]
         print(f"🔎 '{query}' -> {len(relevant)}/{len(snippets)} relevant: {[s['link'][:45] for s in relevant]}")
 
