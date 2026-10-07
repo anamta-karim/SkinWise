@@ -11,6 +11,8 @@ from groq import Groq
 import torch
 from analysis_utils import embedding_model
 from sentence_transformers import util
+from text_utils import (GENERIC_WORDS, VARIANT_WORDS, clean_title, title_tokens, brand_of, is_relevant,
+                        variant_conflict, list_confidence, source_confidence, norm_ingredient as _norm)
 
 from dotenv import load_dotenv
 import os
@@ -25,7 +27,7 @@ def _create(*args, **kwargs):
     kwargs["max_tokens"] = kwargs.get("max_tokens", 300) + 700
     kwargs.setdefault("extra_body", {"reasoning_effort": "low"})
     r = _orig_create(*args, **kwargs)
-    try:                                   # strip markdown the page can't render
+    try:
         for ch in r.choices:
             if ch.message and ch.message.content:
                 ch.message.content = ch.message.content.replace("**", "").replace("__", "")
@@ -449,7 +451,6 @@ def check_brand_base():
                 brand_data['ai_explanation'] = ai_analysis
             return jsonify(brand_data)
 
-    # typo-tolerant match on names and aliases (brand names aren't semantic, so no embeddings here)
     candidates = {}
     for b in BRANDS:
         candidates[b['name'].lower()] = b
@@ -534,7 +535,7 @@ Text:
         items = ast.literal_eval(m.group(0)) if m else []
         items = [str(i).strip().lower() for i in items if str(i).strip()]
         text_l = text.lower()
-        kept = [i for i in items if i in text_l]   # drop anything not literally in the source
+        kept = [i for i in items if i in text_l]
         print(f"   model returned {len(items)} ingredients, {len(kept)} found in the source text")
         return kept
     except Exception as e:
@@ -543,7 +544,7 @@ Text:
 
 PREFERRED_SITES = ("incidecoder.com", "skincarisma.com", "minimalist.co", "nykaa.com", "purplle.com")
 SKIP_SITES = ("amazon.", "flipkart.", "youtube.", "instagram.", "facebook.", "reddit.", "pinterest.", "taobao.", "inkeedecoder.", "joom.")
-USE_AMAZON = False   # Amazon lookups cost 1 credit each and returned nothing in tests
+USE_AMAZON = False
 
 TYPE_WORDS = {
     "face_wash": ("wash", "cleanser"),
@@ -555,51 +556,6 @@ TYPE_WORDS = {
     "mask_peel": ("mask", "peel"),
 }
 
-def list_confidence(n, from_web):
-    """How much to trust a score. Labels/pasted lists are complete; web-found lists may be partial."""
-    if not from_web:
-        return 'complete'
-    if n >= 15:
-        return 'good'
-    if n >= 8:
-        return 'partial'
-    return 'low'
-
-def clean_title(title):
-    t = title.split('|')[0]
-    t = re.sub(r'\(.*?\)', ' ', t)
-    t = t.split(',')[0]
-    t = re.sub(r'(?i)\b(with|for)\b.*$', ' ', t)
-    t = re.sub(r'(?i)\b(pack of \d+|\d+\s?(ml|g|gm|gms|oz))\b', ' ', t)
-    t = re.sub(r'\s+', ' ', t).strip()
-    return ' '.join(t.split()[:8])
-
-GENERIC_WORDS = {"serum", "toner", "cream", "face", "gel", "lotion", "moisturizer", "moisturiser",
-                "moisturising", "moisturizing", "hydrating", "wash", "cleanser", "sunscreen", "mask",
-                "essence", "skin", "with", "for", "the", "and", "spf", "acid", "free", "pack"}
-
-def title_tokens(title):
-    """Distinctive words of a product title (brand + key active)."""
-    words = re.findall(r"[a-z0-9]+", clean_title(title).lower())
-    return [w for w in words if len(w) >= 4 and w not in GENERIC_WORDS and not w.isdigit()]
-
-def brand_of(title):
-    ws = [w for w in re.findall(r"[a-z0-9]+", clean_title(title).lower()) if w != 'the']
-    return ws[0] if ws else ''
-
-def is_relevant(result, tokens, brand=''):
-    """Whole-word match (so 'derma' doesn't match 'dermaquest'); the brand must appear if it's 4+ letters."""
-    blob = f"{result['title']} {result['link']} {result['snippet']}".lower()
-    words = set(re.findall(r"[a-z0-9]+", blob))
-    if len(brand) >= 4 and brand not in words:
-        return False
-    need = 1 if len(tokens) <= 1 else 2
-    return sum(1 for t in tokens if t in words) >= need
-
-def _norm(i):
-    """lowercase, drop (parentheses) and percentages like 10%"""
-    return re.sub(r'\s+', ' ', re.sub(r'\([^)]*\)|\d+(\.\d+)?\s*%', ' ', i.lower())).strip()
-
 def looks_like_inci(items):
     """A candidate list only counts if it mostly matches our ingredient database."""
     if len(items) < 6:
@@ -607,21 +563,6 @@ def looks_like_inci(items):
     hits = sum(1 for it in items
             if process.extractOne(_norm(it), terms_only, scorer=fuzz.ratio, score_cutoff=85))
     return hits / len(items) >= 0.35
-
-VARIANT_WORDS = {"psoriasis", "eczema", "baume", "intensive", "renewing", "kids", "baby",
-                "travel", "mini", "sample", "refill", "kit", "combo", "pm", "lotion", "gel"}
-
-def variant_conflict(result, query_title):
-    """True if the page is about a variant (e.g. 'psoriasis') that the user didn't ask for."""
-    q = set(re.findall(r"[a-z]+", query_title.lower()))
-    blob = set(re.findall(r"[a-z]+", f"{result['title']} {result['link']}".lower()))
-    return bool((blob & VARIANT_WORDS) - q)
-
-def source_confidence(n, sources):
-    c = list_confidence(n, bool(sources))
-    if sources and sources[0].get('note') and c == 'good':
-        return 'partial'          # a closest-match variant page: treat the score as a best case
-    return c
 
 def get_product_ingredients(title, retry=True):
     """Strict pass (exact-product pages), then a lenient pass over the same cached results that
@@ -668,7 +609,7 @@ def get_product_ingredients(title, retry=True):
         if hit:
             return hit
 
-    for snippets in fetched:           # same results again: 0 extra credits
+    for snippets in fetched:
         hit = scan(snippets, True)
         if hit:
             print("   ↪ no exact-product page had a list; using a closest-match variant page")
@@ -795,7 +736,7 @@ def api_dupes():
             t = o['title'].lower()
             if o['price_value'] is None or o['price_value'] >= float(price) * 0.9:
                 continue
-            if '₹' not in (o['price'] or ''):          # skip other currencies
+            if '₹' not in (o['price'] or ''):
                 continue
             if (brand and brand in t) or t[:40] in seen:
                 continue
@@ -815,7 +756,7 @@ def api_dupes():
                     'link': o['link'], 'thumbnail': o['thumbnail'],
                     'saving': int(float(price) - o['price_value'])}
             ings = []
-            if i < 2:                      # only spend credits reading the top 2
+            if i < 2:
                 try:
                     ings, _ = get_product_ingredients(o['title'], retry=False)
                 except Exception as e:
@@ -857,7 +798,7 @@ def summarize_evidence(name, web, db_payload):
 @app.route('/api/check_brand', methods=['POST'])
 def check_brand():
     result = check_brand_base()
-    if isinstance(result, tuple):          # error responses pass straight through
+    if isinstance(result, tuple):
         return result
     payload = result.get_json()
     try:
