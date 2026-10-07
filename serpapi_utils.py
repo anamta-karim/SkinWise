@@ -47,7 +47,7 @@ def serpapi_search(engine, **params):
         if cache_key in _cache:
             return _cache[cache_key], True
 
-    for attempt in range(2):                      # SerpApi occasionally times out; retry once
+    for attempt in range(2):                     
         try:
             r = requests.get(SERPAPI_URL,
                              params={"engine": engine, "api_key": api_key, **params},
@@ -137,7 +137,7 @@ def discover_products(category, skin_type, concerns, limit=5):
         key = o["title"].lower()[:40]
         if not o["title"] or o["price_value"] is None or key in seen:
             continue
-        if "₹" not in (o["price"] or ""):          # skip listings priced in other currencies
+        if "₹" not in (o["price"] or ""):          
             continue
         seen.add(key)
         rating = o["rating"] or 0
@@ -259,7 +259,7 @@ def amazon_ingredient_candidates(asin, domain="amazon.in"):
     explicit = [re.sub(r"\s+", " ", x).strip(" .;").lower() for x in raw.split(",")]
     explicit = [i for i in explicit if i]
 
-    text = " | ".join(_all_strings(data))          # scan every text field of the listing
+    text = " | ".join(_all_strings(data))          
     candidates = find_comma_lists(text)
     if not explicit and not candidates:
         print("   amazon response keys:", list(data.keys())[:14])
@@ -286,7 +286,7 @@ def brand_evidence(brand):
         if key in f"{r['title']} {r['link']}".lower() or r["snippet"].lower().count(key) >= 2]
     for r in web:
         r["trusted"] = next((label for dom, label in TRUSTED_SOURCES.items() if dom in r["link"]), None)
-    web.sort(key=lambda r: r["trusted"] is None)          # trusted sources first (stable sort)
+    web.sort(key=lambda r: r["trusted"] is None)          
 
     news = []
     try:
@@ -348,7 +348,7 @@ def ingredient_pulse(ingredients):
         raise RuntimeError("Google Trends returned no data for these ingredients")
 
     stats = []
-    k = max(1, len(series) // 6)                      # compare first vs last ~2 months
+    k = max(1, len(series) // 6)                      
     for idx, name in enumerate(ingredients):
         col = [p["values"][idx] for p in series]
         first, last = sum(col[:k]) / k, sum(col[-k:]) / k
