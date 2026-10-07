@@ -12,7 +12,7 @@ from urllib.parse import urlparse
 from dotenv import load_dotenv
 load_dotenv()
 
-import app as skinwise            # loads the models once (takes ~20 s)
+import app as skinwise            
 import serpapi_utils as su
 
 PRODUCTS = [
@@ -37,12 +37,12 @@ for name in PRODUCTS:
     try:
         ings, sources = skinwise.get_product_ingredients(name)
         err = ""
-    except Exception as e:                      # a timeout etc. counts as a miss
+    except Exception as e:                      
         ings, sources, err = [], [], str(e)[:60]
     host = urlparse(sources[0]["link"]).netloc.replace("www.", "") if (sources and ings) else "-"
     rows.append({
         "product": name,
-        "found": len(ings) >= 8,          # "usable" = 8+ ingredients; shorter lists are low-confidence
+        "found": len(ings) >= 8,          
         "n_ingredients": len(ings),
         "match": ("closest variant" if sources and sources[0].get("note") else "exact") if ings else "-",
         "confidence": skinwise.source_confidence(len(ings), sources) if ings else "-",
