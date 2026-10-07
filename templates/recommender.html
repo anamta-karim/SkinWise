@@ -442,7 +442,7 @@
           body: JSON.stringify({title: decodeURIComponent(btn.dataset.title), skin_type: selectedSkin[0] || ""})
         });
         const d = await res.json();
-        const src = (d.sources || []).slice(0, 2).map(s => `<a href="${s.link}" target="_blank" style="color:#7C5CBF;">${s.title.slice(0, 40)}…</a>`).join('<br>');
+        const src = (d.sources || []).slice(0, 2).map(s => `<a href="${s.link}" target="_blank" style="color:#7C5CBF;">${s.title.slice(0, 40)}…</a>${s.note ? ' <em style="color:#B8860B;">(' + s.note + ')</em>' : ''}`).join('<br>');
         if (!d.found) {
           box.innerHTML = `<p style="color:#888; text-align:center;">Couldn't find a reliable ingredient list online.</p>`;
         } else {

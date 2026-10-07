@@ -333,7 +333,7 @@
       renderResults(data);
       if (data.sources && data.sources.length) {
         document.getElementById('resultSection').insertAdjacentHTML('beforeend',
-          `<p style="text-align:center; font-size:0.85rem; color:var(--muted); margin-top:1.5rem;">Ingredients found via Google Search (may be incomplete, verify on the pack): ${data.sources.map(s => `<a href="${s.link}" target="_blank" style="color:#7C5CBF;">${s.title.slice(0, 40)}…</a>`).join(' • ')}</p>`);
+          `<p style="text-align:center; font-size:0.85rem; color:var(--muted); margin-top:1.5rem;">Ingredients found via Google Search (may be incomplete, verify on the pack): ${data.sources.map(s => `<a href="${s.link}" target="_blank" style="color:#7C5CBF;">${s.title.slice(0, 40)}…</a>${s.note ? ' <em style="color:#B8860B;">(' + s.note + ')</em>' : ''}`).join(' • ')}</p>`);
       }
 
       btn.textContent = "Analysis Complete";
@@ -342,6 +342,8 @@
 
     function confidenceNote(data) {
       const n = (data.ingredients || []).length;
+      if ((data.sources || []).some(s => s.note))
+        return `<br><span style="color:#B8860B; font-size:0.85rem;">⚠️ Closest match found: this list is from a different variant of the product, so treat the score as a best case. Check the label.</span>`;
       if (data.confidence === 'low')
         return `<br><span style="color:#B8860B; font-size:0.85rem;">⚠️ Only ${n} ingredients found online. This is a best-case score: ingredients we couldn't read could lower it. Check the label.</span>`;
       if (data.confidence === 'partial')

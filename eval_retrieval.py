@@ -42,28 +42,33 @@ for name in PRODUCTS:
     host = urlparse(sources[0]["link"]).netloc.replace("www.", "") if (sources and ings) else "-"
     rows.append({
         "product": name,
-        "found": len(ings) >= 3,
+        "found": len(ings) >= 8,          # "usable" = 8+ ingredients; shorter lists are low-confidence
         "n_ingredients": len(ings),
-        "confidence": skinwise.list_confidence(len(ings), True) if ings else "-",
+        "match": ("closest variant" if sources and sources[0].get("note") else "exact") if ings else "-",
+        "confidence": skinwise.source_confidence(len(ings), sources) if ings else "-",
         "source": host,
         "credits": su.credits_used_this_session - before,
         "seconds": round(time.time() - start, 1),
         "error": err,
     })
     r = rows[-1]
-    print(f"{'OK ' if r['found'] else 'MISS'} {name:45} {r['n_ingredients']:>3} ingredients  {r['source']}")
+    print(f"{'OK ' if r['found'] else 'MISS'} {name:45} {r['n_ingredients']:>3} ingredients  {r['match']:15} {r['source']}")
 
 found = [r for r in rows if r["found"]]
+low = [r for r in rows if not r["found"] and r["n_ingredients"] > 0]
+missed = [r for r in rows if r["n_ingredients"] == 0]
 good = [r for r in found if r["confidence"] == "good"]
-print("\n| Product | Found | Ingredients | Confidence | Source |")
-print("|---|---|---|---|---|")
+exact = [r for r in found if r["match"] == "exact"]
+print("\n| Product | Found | Ingredients | Match | Confidence | Source |")
+print("|---|---|---|---|---|---|")
 for r in rows:
-    print(f"| {r['product']} | {'yes' if r['found'] else 'no'} | {r['n_ingredients'] or '-'} | {r['confidence']} | {r['source']} |")
+    print(f"| {r['product']} | {'yes' if r['found'] else 'no'} | {r['n_ingredients'] or '-'} | {r['match']} | {r['confidence']} | {r['source']} |")
 
-print(f"\nIngredient list found for {len(found)}/{len(rows)} products "
-    f"({len(good)} with 15+ ingredients). "
-    f"Median list length: {statistics.median([r['n_ingredients'] for r in found]) if found else 0}. "
-    f"Credits used this run: {su.credits_used_this_session}.")
+print(f"\nUsable ingredient list (8+ ingredients) for {len(found)}/{len(rows)} products; "
+      f"{len(low)} low-confidence (<8 ingredients); {len(missed)} not found. "
+      f"({len(exact)} exact-product pages, {len(found) - len(exact)} closest-variant, {len(good)} with 15+ ingredients). "
+      f"Median list length: {statistics.median([r['n_ingredients'] for r in found]) if found else 0}. "
+      f"Credits used this run: {su.credits_used_this_session}.")
 print("Spot-check 3-4 rows against the real pack: the source column shows which site the list came from.")
 
 with open("retrieval_results.json", "w", encoding="utf-8") as f:

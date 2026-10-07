@@ -1,0 +1,134 @@
+[
+ {
+  "product": "CeraVe Moisturising Cream",
+  "found": true,
+  "n_ingredients": 21,
+  "match": "closest variant",
+  "confidence": "partial",
+  "source": "skinsort.com",
+  "credits": 0,
+  "seconds": 0.5,
+  "error": ""
+ },
+ {
+  "product": "Cetaphil Gentle Skin Cleanser",
+  "found": true,
+  "n_ingredients": 10,
+  "match": "exact",
+  "confidence": "partial",
+  "source": "cetaphil.com",
+  "credits": 0,
+  "seconds": 0.0,
+  "error": ""
+ },
+ {
+  "product": "Neutrogena Hydro Boost Water Gel",
+  "found": true,
+  "n_ingredients": 38,
+  "match": "exact",
+  "confidence": "good",
+  "source": "skinsort.com",
+  "credits": 0,
+  "seconds": 0.0,
+  "error": ""
+ },
+ {
+  "product": "La Roche-Posay Effaclar Duo+M",
+  "found": true,
+  "n_ingredients": 33,
+  "match": "exact",
+  "confidence": "good",
+  "source": "skinsort.com",
+  "credits": 0,
+  "seconds": 0.0,
+  "error": ""
+ },
+ {
+  "product": "The Ordinary Niacinamide 10% + Zinc 1%",
+  "found": true,
+  "n_ingredients": 8,
+  "match": "exact",
+  "confidence": "partial",
+  "source": "indiamart.com",
+  "credits": 0,
+  "seconds": 0.0,
+  "error": ""
+ },
+ {
+  "product": "Minimalist 10% Niacinamide Serum",
+  "found": true,
+  "n_ingredients": 17,
+  "match": "exact",
+  "confidence": "good",
+  "source": "skincarisma.com",
+  "credits": 0,
+  "seconds": 0.9,
+  "error": ""
+ },
+ {
+  "product": "The Derma Co 2% Salicylic Acid Serum",
+  "found": false,
+  "n_ingredients": 0,
+  "match": "-",
+  "confidence": "-",
+  "source": "-",
+  "credits": 0,
+  "seconds": 1.0,
+  "error": ""
+ },
+ {
+  "product": "Dot & Key Watermelon Sunscreen SPF 50",
+  "found": true,
+  "n_ingredients": 17,
+  "match": "exact",
+  "confidence": "good",
+  "source": "dotandkey.com",
+  "credits": 0,
+  "seconds": 0.0,
+  "error": ""
+ },
+ {
+  "product": "Foxtale Vitamin C Serum",
+  "found": true,
+  "n_ingredients": 8,
+  "match": "exact",
+  "confidence": "partial",
+  "source": "foxtale.in",
+  "credits": 0,
+  "seconds": 0.0,
+  "error": ""
+ },
+ {
+  "product": "Plum 10% Niacinamide Serum",
+  "found": false,
+  "n_ingredients": 4,
+  "match": "exact",
+  "confidence": "low",
+  "source": "beautybar.co.ke",
+  "credits": 0,
+  "seconds": 0.4,
+  "error": ""
+ },
+ {
+  "product": "Pyunkang Yul Essence Toner",
+  "found": false,
+  "n_ingredients": 6,
+  "match": "exact",
+  "confidence": "low",
+  "source": "skinsort.com",
+  "credits": 0,
+  "seconds": 0.0,
+  "error": ""
+ },
+ {
+  "product": "COSRX Advanced Snail 96 Mucin Power Essence",
+  "found": false,
+  "n_ingredients": 6,
+  "match": "exact",
+  "confidence": "low",
+  "source": "joom.com",
+  "credits": 0,
+  "seconds": 0.0,
+  "error": ""
+ }
+]

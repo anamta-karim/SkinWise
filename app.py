@@ -380,7 +380,7 @@ def analyze():
             'caution_count': results.get('caution_count', 0),
             'avoid_count': results.get('avoid_count', 0),
             'sources': sources,
-            'confidence': list_confidence(len(ingredients), bool(sources))
+            'confidence': source_confidence(len(ingredients), sources)
         })
     except Exception as e:
         import traceback
@@ -542,7 +542,7 @@ Text:
         return []
 
 PREFERRED_SITES = ("incidecoder.com", "skincarisma.com", "minimalist.co", "nykaa.com", "purplle.com")
-SKIP_SITES = ("amazon.", "flipkart.", "youtube.", "instagram.", "facebook.", "reddit.", "pinterest.", "taobao.")
+SKIP_SITES = ("amazon.", "flipkart.", "youtube.", "instagram.", "facebook.", "reddit.", "pinterest.", "taobao.", "inkeedecoder.", "joom.")
 USE_AMAZON = False   # Amazon lookups cost 1 credit each and returned nothing in tests
 
 TYPE_WORDS = {
@@ -583,11 +583,18 @@ def title_tokens(title):
     words = re.findall(r"[a-z0-9]+", clean_title(title).lower())
     return [w for w in words if len(w) >= 4 and w not in GENERIC_WORDS and not w.isdigit()]
 
-def is_relevant(result, tokens):
-    """Does this search result actually mention the product?"""
+def brand_of(title):
+    ws = [w for w in re.findall(r"[a-z0-9]+", clean_title(title).lower()) if w != 'the']
+    return ws[0] if ws else ''
+
+def is_relevant(result, tokens, brand=''):
+    """Whole-word match (so 'derma' doesn't match 'dermaquest'); the brand must appear if it's 4+ letters."""
     blob = f"{result['title']} {result['link']} {result['snippet']}".lower()
+    words = set(re.findall(r"[a-z0-9]+", blob))
+    if len(brand) >= 4 and brand not in words:
+        return False
     need = 1 if len(tokens) <= 1 else 2
-    return sum(1 for t in tokens if t in blob) >= need
+    return sum(1 for t in tokens if t in words) >= need
 
 def _norm(i):
     """lowercase, drop (parentheses) and percentages like 10%"""
@@ -610,30 +617,32 @@ def variant_conflict(result, query_title):
     blob = set(re.findall(r"[a-z]+", f"{result['title']} {result['link']}".lower()))
     return bool((blob & VARIANT_WORDS) - q)
 
+def source_confidence(n, sources):
+    c = list_confidence(n, bool(sources))
+    if sources and sources[0].get('note') and c == 'good':
+        return 'partial'          # a closest-match variant page: treat the score as a best case
+    return c
+
 def get_product_ingredients(title, retry=True):
-    """Relevant snippets first, then relevant pages, then AI extraction. Returns (ingredients, sources)."""
+    """Strict pass (exact-product pages), then a lenient pass over the same cached results that
+    accepts other variants of the product, flagged as a closest match. Returns (ingredients, sources)."""
     short = clean_title(title)
     tokens = title_tokens(title)
-    sources = []
-    queries = (f"{short} skincare ingredients", f"{short} incidecoder")
-    for query in queries[: 2 if retry else 1]:
-        snippets, _ = search_snippets(query)
-        relevant = [s for s in snippets if is_relevant(s, tokens) and not variant_conflict(s, short)]
-        dropped = [s['link'][:60] for s in snippets
-                if is_relevant(s, tokens) and variant_conflict(s, short)]
-        if dropped:
-            print(f"   skipped as other variants: {dropped}")
-        sources = [{'title': s['title'], 'link': s['link']} for s in relevant[:3]]
-        print(f"🔎 '{query}' -> {len(relevant)}/{len(snippets)} relevant: {[s['link'][:45] for s in relevant]}")
+    brand = brand_of(title)
+    queries = (f"{short} skincare ingredients", f"{short} incidecoder")[: 2 if retry else 1]
+
+    def scan(snippets, allow_variants):
+        relevant = [s for s in snippets if is_relevant(s, tokens, brand)
+                    and (allow_variants or not variant_conflict(s, short))]
+        note = 'closest match, may be a different variant' if allow_variants else ''
 
         # 1) a valid-looking list inside a relevant snippet
         for s in relevant:
             for l in find_comma_lists(s['snippet']):
                 if looks_like_inci(l):
-                    print("   ✅ valid list found in a relevant snippet")
-                    return l, [{'title': s['title'], 'link': s['link']}]
+                    return l, [{'title': s['title'], 'link': s['link'], 'note': note}]
 
-        # 2) read relevant pages
+        # 2) read the relevant pages (plain fetch, 0 credits, cached)
         def rank(s):
             return 0 if any(d in s['link'] for d in PREFERRED_SITES) else 1
         candidates = [s for s in sorted(relevant, key=rank)
@@ -643,33 +652,28 @@ def get_product_ingredients(title, retry=True):
             valid = [l for l in page['lists'] if looks_like_inci(l)]
             print(f"   page {s['link'][:50]} -> {len(page['lists'])} candidate lists, {len(valid)} valid")
             if valid:
-                return max(valid, key=len), [{'title': s['title'], 'link': s['link']}]
+                return max(valid, key=len), [{'title': s['title'], 'link': s['link'], 'note': note}]
             if page['windows']:
                 found = extract_ingredients_from_snippets(short, [{'title': s['title'], 'snippet': page['windows']}])
                 if len(found) >= 3:
-                    return found, [{'title': s['title'], 'link': s['link']}]
+                    return found, [{'title': s['title'], 'link': s['link'], 'note': note}]
+        return None
 
-        # 3) an Amazon.in listing among the relevant results -> read the whole listing (1 credit)
-        for s in relevant:
-            if not USE_AMAZON or 'amazon.' not in s['link']:
-                continue
-            m = re.search(r"amazon\.in/(?:.*?/)?(?:dp|gp/product)/([A-Z0-9]{10})", s['link'])
-            if not m:
-                print(f"   amazon link without a product id: {s['link'][:90]}")
-                continue
-            try:
-                explicit, cands = amazon_ingredient_candidates(m.group(1))
-            except Exception as e:
-                print(f"   ⚠️ Amazon lookup failed: {e}")
-                break
-            valid = [l for l in cands if looks_like_inci(l)]
-            print(f"   🛒 Amazon {m.group(1)} -> explicit {len(explicit)}, {len(cands)} candidate lists, {len(valid)} valid")
-            if len(explicit) >= 3:
-                return explicit, [{'title': s['title'], 'link': s['link']}]
-            if valid:
-                return max(valid, key=len), [{'title': s['title'], 'link': s['link']}]
-            break
-    return [], sources
+    fetched = []
+    for query in queries:
+        snippets, _ = search_snippets(query)
+        fetched.append(snippets)
+        print(f"🔎 '{query}' -> {len(snippets)} results")
+        hit = scan(snippets, False)
+        if hit:
+            return hit
+
+    for snippets in fetched:           # same results again: 0 extra credits
+        hit = scan(snippets, True)
+        if hit:
+            print("   ↪ no exact-product page had a list; using a closest-match variant page")
+            return hit
+    return [], []
 
 @app.route('/api/recommend_live', methods=['POST'])
 def recommend_live():
@@ -702,7 +706,7 @@ def live_analyze():
             'found': True,
             'ingredients': ingredients,
             'score': calculate_safety_score(results),
-            'confidence': list_confidence(len(ingredients), True),
+            'confidence': source_confidence(len(ingredients), sources),
             'flagged': [{'ingredient': r.get('ingredient_name', ''),
                         'concern_level': r.get('concern_level', ''),
                         'explanation': r.get('explanation', '')} for r in results['flagged']],
