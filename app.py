@@ -21,6 +21,7 @@ groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
 print("Groq model:", GROQ_MODEL)
 _orig_create = groq_client.chat.completions.create
+os.makedirs('static/uploads', exist_ok=True)
 
 def _create(*args, **kwargs):
     kwargs["model"] = GROQ_MODEL
