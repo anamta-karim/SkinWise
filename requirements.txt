@@ -1,29 +1,24 @@
+# SkinWise dependencies. Python 3.10 recommended.
+# The extra index lets pip pick the smaller CPU-only PyTorch build on Windows and Linux;
+# macOS falls back to the standard PyPI build automatically.
 --extra-index-url https://download.pytorch.org/whl/cpu
 
-# Core Web Framework
+# Web app
 Flask==3.0.3
+python-dotenv==1.0.1
+requests>=2.31,<3
 
-# AI/ML & OCR
+# OCR and embeddings (PyTorch pinned so versions stay compatible with each other)
+torch==2.4.1
+torchvision==0.19.1
 easyocr==1.7.2
 sentence-transformers==3.4.1
-torch==2.4.1+cpu
-torchvision==0.19.1+cpu
-torchaudio==2.4.1+cpu
-
-# Data & Matching
-pandas==2.2.3
-rapidfuzz==3.13.0
 numpy==1.26.4
-
-# LLM Integration
-groq==0.11.0
-
-# Utilities
-python-dotenv==1.0.1
 Pillow==10.4.0
 
-# Optional (only if you are still using them)
-# scikit-learn==1.5.0
-# joblib==1.4.2
+# Data and matching
+pandas==2.2.3
+rapidfuzz==3.13.0
 
-requests
+# LLM
+groq==0.11.0
