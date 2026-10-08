@@ -1,5 +1,8 @@
 from flask import Flask, render_template, request, jsonify
 import os
+os.environ.setdefault("USE_TF", "0")
+os.environ.setdefault("USE_TORCH", "1")
+os.environ.setdefault("TF_ENABLE_ONEDNN_OPTS", "0")
 import json
 import time
 from ocr_utils import extract_ingredients
@@ -15,7 +18,6 @@ from text_utils import (GENERIC_WORDS, VARIANT_WORDS, clean_title, title_tokens,
                         variant_conflict, list_confidence, source_confidence, norm_ingredient as _norm)
 
 from dotenv import load_dotenv
-import os
 load_dotenv()
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")

@@ -17,14 +17,12 @@
 
 ## Demo
 
-| Ingredient Analyzer | Cheaper dupes |
-|---|---|
-| ![Analyzer](docs/screenshots/analyzer.png) | ![Dupes](docs/screenshots/dupes.png) |
-
-| EthiScan (brand check) | Ingredient Pulse (trends) |
-|---|---|
-| ![EthiScan](docs/screenshots/ethiscan.png) | ![Trends](docs/screenshots/trends.png) |
-
+| | What you do | What you get |
+|---|---|---|
+| **🔬 Ingredient Analyzer** | <img src="docs/screenshots/analyzer-input.png" width="420"> | <img src="docs/screenshots/analyzer-result.png" width="420"> |
+| **✨ Cheaper dupes** | <img src="docs/screenshots/dupes-input.png" width="420"> | <img src="docs/screenshots/dupes-result.png" width="420"> |
+| **🐰 EthiScan** | <img src="docs/screenshots/ethiscan-input.png" width="420"> | <img src="docs/screenshots/ethiscan-result.png" width="420"> |
+| **📈 Ingredient Pulse** | <img src="docs/screenshots/trends-input.png" width="420"> | <img src="docs/screenshots/trends-result.png" width="420"> |
 ---
 
 ## In plain English
@@ -268,6 +266,7 @@ Uses about 1–2 search credits per product that isn't already cached.
 | Warnings about CUDA/MPS or unauthenticated Hugging Face requests | Harmless: the app runs on CPU |
 | Port 7860 already in use | Close the other process, or change the port in the last lines of `app.py` |
 | `pip install` fails on PyTorch | Use Python 3.10 in a fresh virtual environment |
+| `Keras 3 ... tf-keras` error on startup | Your Python has TensorFlow installed. The app now ignores it automatically. If you still see it, use a fresh virtual environment |
 
 ---
 

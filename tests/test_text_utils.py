@@ -1,5 +1,5 @@
 from text_utils import (brand_of, clean_title, is_relevant, list_confidence, norm_ingredient,
-                        source_confidence, title_tokens, variant_conflict)
+                        percentages, source_confidence, title_tokens, variant_conflict)
 
 
 def result(title, link, snippet=""):
@@ -78,3 +78,25 @@ def test_closest_variant_never_counts_as_good():
 def test_norm_ingredient_drops_percentages_and_brackets():
     assert norm_ingredient("Niacinamide 10%") == "niacinamide"
     assert norm_ingredient("Zinc PCA (1%)") == "zinc pca"
+
+
+# ---- concentration guard ----------------------------------------------------------------------
+def test_percentages_are_extracted():
+    assert percentages("Minimalist 10% Niacinamide Serum") == {"10"}
+    assert percentages("Glycolic Acid 7% + Salicylic 1%") == {"7", "1"}
+    assert percentages("CeraVe Moisturising Cream") == set()
+
+
+def test_different_concentration_is_a_variant():
+    page = result("Minimalist Niacinamide 5% Face Serum", "https://example.com/minimalist-niacinamide-serum")
+    assert variant_conflict(page, "Minimalist 10% Niacinamide Serum")
+
+
+def test_same_concentration_is_not_a_variant():
+    page = result("Minimalist Niacinamide 10% Face Serum 30ml", "https://example.com/minimalist-niacinamide")
+    assert not variant_conflict(page, "Minimalist 10% Niacinamide Serum")
+
+
+def test_page_without_a_percentage_is_not_penalised():
+    page = result("Minimalist Niacinamide Serum", "https://example.com/minimalist-niacinamide")
+    assert not variant_conflict(page, "Minimalist 10% Niacinamide Serum")

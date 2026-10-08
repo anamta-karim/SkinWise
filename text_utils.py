@@ -47,11 +47,20 @@ def is_relevant(result, tokens, brand=''):
     return sum(1 for t in tokens if t in words) >= need
 
 
+def percentages(text):
+    """Concentrations mentioned in a text, e.g. 'Niacinamide 10% Serum' -> {'10'}."""
+    return set(re.findall(r"(\d+(?:\.\d+)?)\s*%", text))
+
+
 def variant_conflict(result, query_title):
-    """True if the page is about a variant (e.g. 'psoriasis') that the user didn't ask for."""
+    """True if the page is about a different variant than the one asked for:
+    a variant word the user didn't type (e.g. 'psoriasis'), or a different concentration (5% vs 10%)."""
     q = set(re.findall(r"[a-z]+", query_title.lower()))
     blob = set(re.findall(r"[a-z]+", f"{result['title']} {result['link']}".lower()))
-    return bool((blob & VARIANT_WORDS) - q)
+    if (blob & VARIANT_WORDS) - q:
+        return True
+    wanted, found = percentages(query_title), percentages(result['title'])
+    return bool(wanted and found and not (wanted & found))
 
 
 def list_confidence(n, from_web):
