@@ -3,7 +3,6 @@ from rapidfuzz import process, fuzz
 from sentence_transformers import SentenceTransformer, util
 import torch
 
-# Load database
 db = pd.read_csv('data/ingredients_database.csv', encoding='latin-1')
 def _fix_text(x):
     if isinstance(x, str):
@@ -14,7 +13,7 @@ def _fix_text(x):
     return x
 
 db = db.apply(lambda col: col.map(_fix_text))
-# Build search index
+
 search_terms = []
 for idx, row in db.iterrows():
     search_terms.append((row['ingredient_name'].lower().strip(), idx))
@@ -28,7 +27,7 @@ terms_only = [term for term, idx in search_terms]
 
 # ====================== SEMANTIC EMBEDDINGS ======================
 print("⏳ Loading AI embedding model (this happens only once)...")
-embedding_model = SentenceTransformer('all-MiniLM-L6-v2')  # fast & accurate for short text
+embedding_model = SentenceTransformer('all-MiniLM-L6-v2') 
 
 # Pre-compute embeddings for all ingredients in the database (fast lookup)
 db_embeddings = embedding_model.encode(terms_only, convert_to_tensor=True)
