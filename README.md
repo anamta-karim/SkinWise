@@ -9,7 +9,7 @@
 ![Tests](https://img.shields.io/badge/tests-pytest-green.svg)
 ![Live data](https://img.shields.io/badge/live_data-SerpApi-7C5CBF.svg)
 
-[▶ **Watch the 3-minute demo**](YOUR_VIDEO_LINK)  ·  [Getting started](#getting-started)  ·  [How well does it work?](#how-well-does-it-work)
+[▶ **Watch the 3-minute demo**](https://www.youtube.com/watch?v=d6dFXuMQhOg)  ·  [Getting started](#getting-started)  ·  [How well does it work?](#how-well-does-it-work)
 
 </div>
 
